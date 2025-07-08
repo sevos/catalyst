@@ -2,8 +2,6 @@ module Catalyst
   class Agent < ApplicationRecord
     self.table_name = "catalyst_agents"
 
-    validates :agentable_type, presence: true
-    validates :agentable_id, presence: true
     validates :max_iterations, presence: true, numericality: { greater_than: 0 }
 
     belongs_to :agentable, polymorphic: true

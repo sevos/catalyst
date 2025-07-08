@@ -82,4 +82,46 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     assert_includes agent.executions, execution2
   end
 
+  test "supports nested attributes via agent_attributes" do
+    application_agent = ApplicationAgent.create!(
+      role: "Marketing Assistant",
+      goal: "Create marketing content",
+      backstory: "Expert in brand marketing",
+      agent_attributes: {
+        max_iterations: 10
+      }
+    )
+
+    assert_not_nil application_agent.catalyst_agent
+    assert_equal 10, application_agent.catalyst_agent.max_iterations
+    assert_equal application_agent, application_agent.catalyst_agent.agentable
+  end
+
+  test "supports nested attributes via catalyst_agent_attributes" do
+    application_agent = ApplicationAgent.create!(
+      role: "Data Analyst",
+      goal: "Analyze business data",
+      backstory: "Expert in data science",
+      catalyst_agent_attributes: {
+        max_iterations: 15
+      }
+    )
+
+    assert_not_nil application_agent.catalyst_agent
+    assert_equal 15, application_agent.catalyst_agent.max_iterations
+    assert_equal application_agent, application_agent.catalyst_agent.agentable
+  end
+
+  test "nested attributes create catalyst_agent with defaults when not specified" do
+    application_agent = ApplicationAgent.create!(
+      role: "Assistant",
+      goal: "Help users",
+      backstory: "AI assistant",
+      agent_attributes: {}
+    )
+
+    assert_not_nil application_agent.catalyst_agent
+    assert_equal 1, application_agent.catalyst_agent.max_iterations
+  end
+
 end
