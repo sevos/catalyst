@@ -1,0 +1,4 @@
+- Ruby on Rails 8 mountable engine
+- Minitest tests (testing with test/dummy app)
+- Frontend:
+  - Hotwire/Turbo/Stimulus + TailwindCSS
