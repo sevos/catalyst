@@ -123,5 +123,4 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     assert_not_nil application_agent.catalyst_agent
     assert_equal 1, application_agent.catalyst_agent.max_iterations
   end
-
 end

@@ -6,7 +6,7 @@ class CreateCatalystExecutions < ActiveRecord::Migration[8.0]
       t.text :prompt, null: false
       t.text :result
       t.json :metadata
-      
+
       t.timestamps
     end
   end

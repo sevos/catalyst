@@ -1,13 +1,13 @@
-require 'rails/generators'
-require 'rails/generators/active_record'
+require "rails/generators"
+require "rails/generators/active_record"
 
 module Catalyst
   class InstallGenerator < Rails::Generators::Base
     include Rails::Generators::Migration
 
-    source_root File.expand_path('templates', __dir__)
+    source_root File.expand_path("templates", __dir__)
 
-    desc 'Install Catalyst framework with migrations and base models'
+    desc "Install Catalyst framework with migrations and base models"
 
     def self.next_migration_number(path)
       ActiveRecord::Generators::Base.next_migration_number(path)

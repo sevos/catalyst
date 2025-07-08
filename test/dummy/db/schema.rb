@@ -25,7 +25,7 @@ ActiveRecord::Schema[8.0].define(version: 3) do
     t.integer "max_iterations", default: 1, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["agentable_type", "agentable_id"], name: "index_catalyst_agents_on_agentable", unique: true
+    t.index [ "agentable_type", "agentable_id" ], name: "index_catalyst_agents_on_agentable", unique: true
   end
 
   create_table "catalyst_executions", force: :cascade do |t|
@@ -36,7 +36,7 @@ ActiveRecord::Schema[8.0].define(version: 3) do
     t.json "metadata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["agent_id"], name: "index_catalyst_executions_on_agent_id"
+    t.index [ "agent_id" ], name: "index_catalyst_executions_on_agent_id"
   end
 
   add_foreign_key "catalyst_executions", "catalyst_agents", column: "agent_id"

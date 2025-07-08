@@ -4,7 +4,7 @@ class CreateApplicationAgents < ActiveRecord::Migration[8.0]
       t.string :role
       t.text :goal
       t.text :backstory
-      
+
       t.timestamps
     end
   end

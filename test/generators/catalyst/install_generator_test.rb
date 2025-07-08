@@ -79,7 +79,7 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
 
   test "does not overwrite existing files" do
     create_file "config/initializers/catalyst.rb", "# existing content"
-    
+
     run_generator
 
     assert_file "config/initializers/catalyst.rb", "# existing content"

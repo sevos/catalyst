@@ -72,8 +72,8 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
   end
 
   test "validates status is in allowed values" do
-    valid_statuses = ["pending", "running", "completed", "failed"]
-    
+    valid_statuses = [ "pending", "running", "completed", "failed" ]
+
     valid_statuses.each do |status|
       execution = Catalyst::Execution.new(
         agent: @agent,
@@ -88,7 +88,7 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
       status: "invalid_status",
       prompt: "Test task"
     )
-    
+
     assert_not execution.valid?
     assert_includes execution.errors[:status], "is not included in the list"
   end
