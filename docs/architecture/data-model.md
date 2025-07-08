@@ -19,6 +19,13 @@ class Catalyst::Agent < ApplicationRecord
   # - agentable_type (string) - for delegated types
   # - agentable_id (integer) - for delegated types
   # - created_at, updated_at (timestamps)
+  
+  # Basic LLM configuration (common to all agent types)
+  # - model (string, default: "gpt-4.1-mini")
+  # - temperature (float, default: 0.1)
+  # - max_tokens (integer, default: 1000)
+  # - max_iterations (integer, default: 5)
+  # Note: Agent prompts are defined in *.md.erb template files, not stored in database
 end
 ```
 
@@ -32,9 +39,6 @@ module Catalyst::Agentable
     # Provides the reverse relationship for delegated types
     has_one :agent, as: :agentable, class_name: "Catalyst::Agent", dependent: :destroy
     
-    # Validation helpers
-    validates :system_prompt, presence: true, if: :requires_system_prompt?
-    
     # Common agent behavior
     def execute(prompt, context: {})
       agent.execute(prompt, context: context)
@@ -43,12 +47,6 @@ module Catalyst::Agentable
     def recent_executions(limit = 10)
       agent.executions.order(created_at: :desc).limit(limit)
     end
-  end
-  
-  private
-  
-  def requires_system_prompt?
-    respond_to?(:system_prompt)
   end
 end
 ```
@@ -59,12 +57,13 @@ end
 class ApplicationAgent < ApplicationRecord
   include Catalyst::Agentable
   
-  # Specific attributes for application agents
-  # - system_prompt (text)
-  # - model (string, default: "gpt-4")
-  # - temperature (float, default: 0.7)
-  # - max_tokens (integer, default: 1000)
-  # - max_iterations (integer, default: 5)
+  # Basic agent configuration attributes
+  # - role (text) - What the agent is (e.g., "Marketing Assistant", "Data Analyst")
+  # - backstory (text) - Agent's background and expertise context
+  # - goal (text) - What the agent is trying to accomplish
+  
+  # Note: LLM configuration (model, temperature, etc.) is handled by base Catalyst::Agent
+  # Agent prompts are constructed from role/backstory/goal using *.md.erb templates
 end
 ```
 
@@ -104,6 +103,31 @@ class Catalyst::Execution < ApplicationRecord
 end
 ```
 
+## Attribute Placement Strategy
+
+### What Belongs in Catalyst::Agent (Base Model)
+- **Common identification**: `name`, `description`
+- **LLM configuration**: `model`, `temperature`, `max_tokens`, `max_iterations`
+- **Delegated types metadata**: `agentable_type`, `agentable_id`
+- **Timestamps**: `created_at`, `updated_at`
+
+**Rationale**: These attributes are common to ALL agent types and form the foundation of agent behavior.
+
+### What Belongs in Delegated Types (e.g., ApplicationAgent)
+- **Agent personality**: `role`, `backstory`, `goal` (for ApplicationAgent)
+- **Domain-specific configuration**: `campaign_type`, `brand_guidelines` (for MarketingAgent)
+- **Specialized behavior parameters**: Custom attributes that modify agent behavior
+- **Type-specific constraints**: Validation rules unique to that agent type
+
+**Rationale**: These attributes define what makes each agent type unique and specialized.
+
+### What Belongs in External Files
+- **Agent prompts**: Defined in `*.md.erb` template files for maintainability
+- **Tool definitions**: Separate tool classes for reusability
+- **Validation logic**: Complex business rules in model methods
+
+**Rationale**: Code and templates are more maintainable outside the database schema.
+
 ## Database Schema Benefits
 
 ### Multi-Tenancy Support
@@ -134,15 +158,20 @@ create_table :catalyst_agents do |t|
   t.bigint :agentable_id, null: false
   t.timestamps
   
+  # Basic LLM configuration (common to all agent types)
+  t.string :model, default: "gpt-4.1-mini"
+  t.float :temperature, default: 0.1
+  t.integer :max_tokens, default: 1000
+  t.integer :max_iterations, default: 5
+  
   t.index [:agentable_type, :agentable_id], unique: true
 end
 
 create_table :application_agents do |t|
-  t.text :system_prompt
-  t.string :model, default: "gpt-4"
-  t.float :temperature, default: 0.7
-  t.integer :max_tokens, default: 1000
-  t.integer :max_iterations, default: 5
+  # Basic agent configuration
+  t.text :role, null: false
+  t.text :backstory
+  t.text :goal, null: false
   t.timestamps
 end
 
