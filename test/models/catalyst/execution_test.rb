@@ -9,7 +9,7 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
     )
 
     @agent = Catalyst::Agent.create!(
-      delegatable: @application_agent,
+      agentable: @application_agent,
       max_iterations: 3
     )
   end

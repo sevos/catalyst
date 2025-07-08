@@ -9,13 +9,13 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     )
 
     agent = Catalyst::Agent.create!(
-      delegatable: application_agent,
+      agentable: application_agent,
       max_iterations: 5
     )
 
-    assert_equal application_agent, agent.delegatable
-    assert_equal "ApplicationAgent", agent.delegatable_type
-    assert_equal application_agent.id, agent.delegatable_id
+    assert_equal application_agent, agent.agentable
+    assert_equal "ApplicationAgent", agent.agentable_type
+    assert_equal application_agent.id, agent.agentable_id
     assert_equal 5, agent.max_iterations
   end
 
@@ -26,16 +26,16 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
       backstory: "AI assistant"
     )
 
-    agent = Catalyst::Agent.create!(delegatable: application_agent)
+    agent = Catalyst::Agent.create!(agentable: application_agent)
 
     assert_equal 1, agent.max_iterations
   end
 
-  test "validates presence of delegatable" do
+  test "validates presence of agentable" do
     agent = Catalyst::Agent.new(max_iterations: 3)
 
     assert_not agent.valid?
-    assert_includes agent.errors[:delegatable], "must exist"
+    assert_includes agent.errors[:agentable], "must exist"
   end
 
   test "validates max_iterations is positive" do
@@ -46,7 +46,7 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     )
 
     agent = Catalyst::Agent.new(
-      delegatable: application_agent,
+      agentable: application_agent,
       max_iterations: 0
     )
 
@@ -62,7 +62,7 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     )
 
     agent = Catalyst::Agent.create!(
-      delegatable: application_agent,
+      agentable: application_agent,
       max_iterations: 2
     )
 

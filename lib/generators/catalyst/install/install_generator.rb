@@ -50,7 +50,7 @@ module Catalyst
       say "    backstory: 'I am a helpful AI assistant'"
       say "  )"
       say ""
-      say "  catalyst_agent = Catalyst::Agent.create!(delegatable: agent)"
+      say "  catalyst_agent = Catalyst::Agent.create!(agentable: agent)"
       say ""
     end
   end

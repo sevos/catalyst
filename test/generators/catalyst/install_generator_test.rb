@@ -11,10 +11,10 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
 
     assert_migration "db/migrate/create_catalyst_agents.rb" do |migration|
       assert_match(/create_table :catalyst_agents/, migration)
-      assert_match(/t\.string :delegatable_type, null: false/, migration)
-      assert_match(/t\.bigint :delegatable_id, null: false/, migration)
+      assert_match(/t\.string :agentable_type, null: false/, migration)
+      assert_match(/t\.bigint :agentable_id, null: false/, migration)
       assert_match(/t\.integer :max_iterations, default: 1, null: false/, migration)
-      assert_match(/add_index :catalyst_agents, \[:delegatable_type, :delegatable_id\]/, migration)
+      assert_match(/add_index :catalyst_agents, \[:agentable_type, :agentable_id\]/, migration)
     end
 
     assert_migration "db/migrate/create_application_agents.rb" do |migration|
@@ -49,6 +49,7 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
 
     assert_file "app/ai/application_agent.rb" do |model|
       assert_match(/class ApplicationAgent < ApplicationRecord/, model)
+      assert_match(/include Catalyst::Agentable/, model)
       assert_match(/# This model is your default, simple agent type/, model)
       assert_match(/# It has the role, goal, and backstory attributes/, model)
       assert_match(/# You can add shared logic for all "generic" agents here/, model)
