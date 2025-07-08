@@ -53,7 +53,7 @@ graph TD
 The Catalyst Framework leverages a modern, production-ready technology stack that prioritizes developer experience and maintainability:
 
 * **Ruby on Rails 8 mountable engine** - Provides the core framework structure with proper namespace isolation
-* **Minitest tests** - Testing framework with test/dummy app for comprehensive engine testing
+* **Minitest for testing** - Testing framework with test/dummy app for comprehensive engine testing
 * **Frontend Stack:**
   - **Hotwire/Turbo/Stimulus** - Modern Rails frontend approach for reactive UIs without complex JavaScript frameworks
   - **TailwindCSS** - Utility-first CSS framework for rapid UI development
