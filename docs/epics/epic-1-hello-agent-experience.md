@@ -1,0 +1,73 @@
+# Epic 1: The "Hello, Agent!" Experience
+
+## Epic Goal
+Enable a developer to generate and run a basic agent asynchronously, establishing the core execution loop and foundational infrastructure for the Catalyst framework.
+
+## Epic Description
+
+**Problem Statement:**
+Developers need a simple, Rails-native way to create and execute AI agents without dealing with complex AI infrastructure or integration challenges.
+
+**Solution Overview:**
+Create the foundational components of the Catalyst framework that allow developers to generate, configure, and execute basic AI agents through familiar Rails patterns.
+
+**Value Proposition:**
+- Provides the core foundation for all AI agent functionality
+- Enables developers to get started quickly with AI agents
+- Establishes patterns that scale to more complex agent behaviors
+
+## Stories
+
+### 1.1: Core Models & Installation
+Create the fundamental ActiveRecord models (Agent, Execution) and installation generator that provide the persistent foundation for all framework operations.
+
+### 1.2: Agent Generation & Configuration
+Build a Rails generator that creates agent classes and prompt templates, enabling developers to quickly define new AI agents with role, goal, and backstory.
+
+### 1.3: Default LLM Adapter & Basic Execution
+Implement a configurable LLM adapter (OpenAI) that can execute agent prompts and store results, providing the core execution capability.
+
+### 1.4: Agentic Iteration Loop & Limits
+Add max_iterations configuration to control agent reasoning loops, preventing runaway executions and providing cost control.
+
+### 1.5: Asynchronous Execution via ActiveJob
+Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution through Rails' job queue system.
+
+## Dependencies
+- Rails application environment
+- ActiveRecord for data persistence
+- ActiveJob for background processing
+- OpenAI API access for LLM integration
+
+## Success Criteria
+- [ ] Developer can install the framework with `rails g catalyst:install`
+- [ ] Developer can generate a new agent with `rails g catalyst:agent MyAgent`
+- [ ] Agent can be executed synchronously with `MyAgent.perform_now("prompt")`
+- [ ] Agent can be executed asynchronously with `MyAgent.perform_later("prompt")`
+- [ ] Execution results are persisted and accessible
+- [ ] Framework handles errors gracefully
+- [ ] Cost control through max_iterations works correctly
+
+## Definition of Done
+- [ ] All 5 stories completed with acceptance criteria met
+- [ ] Framework can be installed in a Rails application
+- [ ] Basic agent execution works end-to-end
+- [ ] Documentation covers installation and basic usage
+- [ ] Tests verify all functionality
+- [ ] No security vulnerabilities in basic implementation
+
+## Timeline
+**Target: Sprint 1-2**
+- Stories 1.1-1.3: Core functionality (Sprint 1)
+- Stories 1.4-1.5: Enhanced capabilities (Sprint 2)
+
+## Risks & Mitigation
+- **Risk:** OpenAI API reliability
+  - **Mitigation:** Implement proper error handling and retry logic
+- **Risk:** ActiveJob configuration complexity
+  - **Mitigation:** Provide clear documentation and sensible defaults
+- **Risk:** Performance impact of synchronous execution
+  - **Mitigation:** Emphasize asynchronous execution in documentation
+
+## Notes
+This epic establishes the foundation for the entire Catalyst framework. All subsequent epics depend on these core capabilities being implemented correctly.
