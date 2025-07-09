@@ -26,10 +26,15 @@ module Catalyst
 
     def create_ai_directory
       empty_directory "app/ai"
+      empty_directory "app/ai/prompts"
     end
 
     def create_application_agent
       template "application_agent.rb", "app/ai/application_agent.rb"
+    end
+
+    def create_application_agent_prompt
+      template "application_agent.md.erb", "app/ai/prompts/application_agent.md.erb"
     end
 
     def show_readme
