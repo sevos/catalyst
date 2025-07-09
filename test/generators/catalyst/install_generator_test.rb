@@ -13,7 +13,10 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
       assert_match(/create_table :catalyst_agents/, migration)
       assert_match(/t\.string :agentable_type, null: false/, migration)
       assert_match(/t\.bigint :agentable_id, null: false/, migration)
-      assert_match(/t\.integer :max_iterations, default: 1, null: false/, migration)
+      assert_match(/t\.string :name, null: false/, migration)
+      assert_match(/t\.string :model/, migration)
+      assert_match(/t\.text :model_params/, migration)
+      assert_match(/t\.integer :max_iterations, default: 5, null: false/, migration)
       assert_match(/add_index :catalyst_agents, \[:agentable_type, :agentable_id\]/, migration)
     end
 
@@ -30,6 +33,9 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
       assert_match(/t\.string :status, null: false/, migration)
       assert_match(/t\.text :prompt, null: false/, migration)
       assert_match(/t\.text :result/, migration)
+      assert_match(/t\.text :error_message/, migration)
+      assert_match(/t\.datetime :started_at/, migration)
+      assert_match(/t\.datetime :completed_at/, migration)
       assert_match(/t\.json :metadata/, migration)
     end
   end

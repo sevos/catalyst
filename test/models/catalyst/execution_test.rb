@@ -9,6 +9,7 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
     )
 
     @agent = Catalyst::Agent.create!(
+      name: "Test Agent",
       agentable: @application_agent,
       max_iterations: 3
     )
@@ -124,5 +125,148 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
     assert_equal 2, execution.metadata["iterations_used"]
     assert_equal 150, execution.metadata["tokens_consumed"]
     assert_equal "gpt-4", execution.metadata["model_used"]
+  end
+
+  test "start! method updates status and started_at timestamp" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :pending,
+      prompt: "Test task"
+    )
+
+    assert_nil execution.started_at
+    assert execution.pending?
+
+    execution.start!
+
+    assert_not_nil execution.started_at
+    assert execution.running?
+    assert_equal "running", execution.status
+  end
+
+  test "complete! method updates status, completed_at timestamp, and result" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :running,
+      prompt: "Test task",
+      started_at: 1.hour.ago
+    )
+
+    assert_nil execution.completed_at
+    assert execution.running?
+
+    execution.complete!("Task completed successfully")
+
+    assert_not_nil execution.completed_at
+    assert execution.completed?
+    assert_equal "completed", execution.status
+    assert_equal "Task completed successfully", execution.result
+  end
+
+  test "fail! method updates status, completed_at timestamp, and error_message" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :running,
+      prompt: "Test task",
+      started_at: 1.hour.ago
+    )
+
+    assert_nil execution.completed_at
+    assert_nil execution.error_message
+    assert execution.running?
+
+    execution.fail!("Something went wrong")
+
+    assert_not_nil execution.completed_at
+    assert execution.failed?
+    assert_equal "failed", execution.status
+    assert_equal "Something went wrong", execution.error_message
+  end
+
+  test "running? method returns true when status is running" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :running,
+      prompt: "Test task"
+    )
+
+    assert execution.running?
+    assert_not execution.pending?
+    assert_not execution.completed?
+    assert_not execution.failed?
+  end
+
+  test "finished? method returns true when execution is completed or failed" do
+    completed_execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :completed,
+      prompt: "Test task"
+    )
+
+    failed_execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :failed,
+      prompt: "Test task"
+    )
+
+    running_execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :running,
+      prompt: "Test task"
+    )
+
+    assert completed_execution.finished?
+    assert failed_execution.finished?
+    assert_not running_execution.finished?
+  end
+
+  test "duration method calculates execution time" do
+    start_time = 1.hour.ago
+    end_time = 30.minutes.ago
+
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :completed,
+      prompt: "Test task",
+      started_at: start_time,
+      completed_at: end_time
+    )
+
+    expected_duration = end_time - start_time
+    assert_in_delta expected_duration, execution.duration, 0.001
+  end
+
+  test "duration method returns nil when timestamps are missing" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :pending,
+      prompt: "Test task"
+    )
+
+    assert_nil execution.duration
+  end
+
+  test "stores error_message for failed executions" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      status: :failed,
+      prompt: "Test task",
+      error_message: "Timeout occurred"
+    )
+
+    assert_equal "Timeout occurred", execution.error_message
+  end
+
+  test "validates timestamps consistency" do
+    execution = Catalyst::Execution.new(
+      agent: @agent,
+      status: :completed,
+      prompt: "Test task",
+      started_at: 1.hour.ago,
+      completed_at: 2.hours.ago  # This should fail validation
+    )
+
+    assert_not execution.valid?
+    assert_includes execution.errors[:completed_at], "must be after started_at"
   end
 end

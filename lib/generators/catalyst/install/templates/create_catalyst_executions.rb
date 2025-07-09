@@ -5,6 +5,9 @@ class CreateCatalystExecutions < ActiveRecord::Migration[<%= ActiveRecord::Migra
       t.string :status, null: false
       t.text :prompt, null: false
       t.text :result
+      t.text :error_message
+      t.datetime :started_at
+      t.datetime :completed_at
       t.json :metadata
       
       t.timestamps
