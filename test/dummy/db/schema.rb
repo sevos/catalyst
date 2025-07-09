@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 3) do
+ActiveRecord::Schema[8.0].define(version: 5) do
   create_table "application_agents", force: :cascade do |t|
     t.string "role"
     t.text "goal"
@@ -22,9 +22,12 @@ ActiveRecord::Schema[8.0].define(version: 3) do
   create_table "catalyst_agents", force: :cascade do |t|
     t.string "agentable_type", null: false
     t.bigint "agentable_id", null: false
-    t.integer "max_iterations", default: 1, null: false
+    t.integer "max_iterations", default: 5, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name", null: false
+    t.string "model"
+    t.text "model_params"
     t.index [ "agentable_type", "agentable_id" ], name: "index_catalyst_agents_on_agentable", unique: true
   end
 
@@ -36,6 +39,9 @@ ActiveRecord::Schema[8.0].define(version: 3) do
     t.json "metadata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "error_message"
+    t.datetime "started_at"
+    t.datetime "completed_at"
     t.index [ "agent_id" ], name: "index_catalyst_executions_on_agent_id"
   end
 

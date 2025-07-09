@@ -4,7 +4,10 @@ class CreateCatalystAgents < ActiveRecord::Migration[<%= ActiveRecord::Migration
       t.string :agentable_type, null: false
       t.bigint :agentable_id, null: false
       
-      t.integer :max_iterations, default: 1, null: false
+      t.string :name, null: false
+      t.string :model
+      t.text :model_params
+      t.integer :max_iterations, default: 5, null: false
       
       t.timestamps
     end

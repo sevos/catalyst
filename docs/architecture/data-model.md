@@ -12,19 +12,19 @@ The Catalyst Framework uses a **Delegated Types** approach to provide both simpl
 class Catalyst::Agent < ApplicationRecord
   delegated_type :agentable, types: %w[ApplicationAgent MarketingAgent CustomAgent]
   
-  # Core shared attributes
+  # Core shared attributes (CURRENT IMPLEMENTATION)
   # - id (primary key)
-  # - name (string)
-  # - description (text)
-  # - agentable_type (string) - for delegated types
-  # - agentable_id (integer) - for delegated types
+  # - agentable_type (string, null: false) - for delegated types
+  # - agentable_id (bigint, null: false) - for delegated types
+  # - max_iterations (integer, default: 1, null: false)
   # - created_at, updated_at (timestamps)
   
-  # Basic LLM configuration (common to all agent types)
-  # - model (string, default: "gpt-4.1-mini")
-  # - temperature (float, default: 0.1)
-  # - max_tokens (integer, default: 1000)
-  # - max_iterations (integer, default: 5)
+  # MISSING FROM CURRENT SCHEMA (to be implemented):
+  # - name (string) - agent display name
+  # - model (string) - LLM model selection (e.g., "gpt-4.1-mini")
+  # - model_params (text) - serializable JSON containing LLM parameters
+  #   Examples: {"temperature": 0.1, "max_tokens": 1000, "top_p": 0.9}
+  
   # Note: Agent prompts are defined in *.md.erb template files, not stored in database
 end
 ```
@@ -57,12 +57,14 @@ end
 class ApplicationAgent < ApplicationRecord
   include Catalyst::Agentable
   
-  # Basic agent configuration attributes
-  # - role (text) - What the agent is (e.g., "Marketing Assistant", "Data Analyst")
-  # - backstory (text) - Agent's background and expertise context
+  # Basic agent configuration attributes (CURRENT IMPLEMENTATION)
+  # - id (primary key)
+  # - role (string) - What the agent is (e.g., "Marketing Assistant", "Data Analyst")
   # - goal (text) - What the agent is trying to accomplish
+  # - backstory (text) - Agent's background and expertise context
+  # - created_at, updated_at (timestamps)
   
-  # Note: LLM configuration (model, temperature, etc.) is handled by base Catalyst::Agent
+  # Note: LLM configuration (model, model_params, etc.) is handled by base Catalyst::Agent
   # Agent prompts are constructed from role/backstory/goal using *.md.erb templates
 end
 ```
@@ -89,27 +91,37 @@ end
 class Catalyst::Execution < ApplicationRecord
   belongs_to :agent, class_name: "Catalyst::Agent"
   
-  # Execution state and results
+  # Execution state and results (CURRENT IMPLEMENTATION)
   # - id (primary key)
-  # - agent_id (foreign key)
-  # - status (enum: pending, running, completed, failed)
-  # - prompt (text) - the constructed prompt sent to LLM
-  # - response (text) - the LLM response
-  # - tool_calls (json) - array of tool invocations
-  # - result (json) - final structured result
-  # - error_message (text) - if execution failed
-  # - started_at, completed_at (timestamps)
+  # - agent_id (integer, null: false, foreign key)
+  # - status (string, null: false) - implemented as enum on model level
+  # - prompt (text, null: false) - the constructed prompt sent to LLM
+  # - result (text) - execution result/response from LLM
   # - metadata (json) - additional execution context
+  # - created_at, updated_at (timestamps)
+  
+  # MISSING FROM CURRENT SCHEMA (to be implemented):
+  # - error_message (text) - if execution failed
+  # - started_at (datetime) - when execution began
+  # - completed_at (datetime) - when execution finished
+  
+  # Note: Status enum values defined in model: pending, running, completed, failed
 end
 ```
 
 ## Attribute Placement Strategy
 
 ### What Belongs in Catalyst::Agent (Base Model)
-- **Common identification**: `name`, `description`
-- **LLM configuration**: `model`, `temperature`, `max_tokens`, `max_iterations`
+
+**Currently Implemented:**
 - **Delegated types metadata**: `agentable_type`, `agentable_id`
+- **Basic configuration**: `max_iterations`
 - **Timestamps**: `created_at`, `updated_at`
+
+**To Be Implemented:**
+- **Common identification**: `name`
+- **LLM configuration**: `model`, `model_params` (serializable JSON)
+- **Enhanced max_iterations**: Increase default from 1 to appropriate value
 
 **Rationale**: These attributes are common to ALL agent types and form the foundation of agent behavior.
 
@@ -148,40 +160,55 @@ end
 
 ## Migration Strategy
 
-### Initial Schema
+### Current Schema (As Implemented)
 ```ruby
 # Core tables created by engine installation
 create_table :catalyst_agents do |t|
-  t.string :name, null: false
-  t.text :description
   t.string :agentable_type, null: false
   t.bigint :agentable_id, null: false
+  t.integer :max_iterations, default: 1, null: false
   t.timestamps
   
-  # Basic LLM configuration (common to all agent types)
-  t.string :model, default: "gpt-4.1-mini"
-  t.float :temperature, default: 0.1
-  t.integer :max_tokens, default: 1000
-  t.integer :max_iterations, default: 5
-  
-  t.index [:agentable_type, :agentable_id], unique: true
+  t.index [:agentable_type, :agentable_id], unique: true, name: "index_catalyst_agents_on_agentable"
 end
 
 create_table :application_agents do |t|
-  # Basic agent configuration
-  t.text :role, null: false
+  t.string :role
+  t.text :goal
   t.text :backstory
-  t.text :goal, null: false
   t.timestamps
 end
 
 create_table :catalyst_executions do |t|
   t.references :agent, null: false, foreign_key: { to_table: :catalyst_agents }
-  t.integer :status, default: 0
-  t.text :prompt
-  t.text :response
-  t.json :tool_calls
-  t.json :result
+  t.string :status, null: false
+  t.text :prompt, null: false
+  t.text :result
+  t.json :metadata
+  t.timestamps
+end
+```
+
+### Target Schema (To Be Implemented)
+```ruby
+# Enhanced schema for complete functionality
+create_table :catalyst_agents do |t|
+  t.string :name, null: false
+  t.string :agentable_type, null: false
+  t.bigint :agentable_id, null: false
+  t.string :model
+  t.text :model_params  # Serializable JSON: {"temperature": 0.1, "max_tokens": 1000}
+  t.integer :max_iterations, default: 5, null: false
+  t.timestamps
+  
+  t.index [:agentable_type, :agentable_id], unique: true, name: "index_catalyst_agents_on_agentable"
+end
+
+create_table :catalyst_executions do |t|
+  t.references :agent, null: false, foreign_key: { to_table: :catalyst_agents }
+  t.string :status, null: false  # Enum: pending, running, completed, failed
+  t.text :prompt, null: false
+  t.text :result
   t.text :error_message
   t.datetime :started_at
   t.datetime :completed_at
