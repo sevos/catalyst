@@ -1,6 +1,12 @@
 # Omakase Ruby styling for Rails
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 
+# Exclude generator templates that contain ERB syntax and test temporary files
+AllCops:
+  Exclude:
+    - 'lib/generators/**/templates/**/*.rb'
+    - 'test/dummy/tmp/**/*'
+
 # Overwrite or add rules to create your own house style
 #
 # # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
