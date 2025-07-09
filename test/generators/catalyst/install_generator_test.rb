@@ -68,6 +68,28 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
     assert_directory "app/ai"
   end
 
+  test "creates prompts directory" do
+    run_generator
+
+    assert_directory "app/ai/prompts"
+  end
+
+  test "generates ApplicationAgent prompt file" do
+    run_generator
+
+    assert_file "app/ai/prompts/application_agent.md.erb" do |content|
+      assert_match(/# ApplicationAgent Prompt/, content)
+      assert_match(/## Role/, content)
+      assert_match(/<%= role %>/, content)
+      assert_match(/## Goal/, content)
+      assert_match(/<%= goal %>/, content)
+      assert_match(/## Backstory/, content)
+      assert_match(/<%= backstory %>/, content)
+      assert_match(/## Instructions/, content)
+      assert_match(/## Context/, content)
+    end
+  end
+
   test "generates files in correct order" do
     run_generator
 
@@ -89,6 +111,18 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
     run_generator
 
     assert_file "config/initializers/catalyst.rb", "# existing content"
+  end
+
+  test "existing install functionality unchanged" do
+    run_generator
+
+    # Test all existing assertions still pass
+    assert_migration "db/migrate/create_catalyst_agents.rb"
+    assert_migration "db/migrate/create_application_agents.rb"
+    assert_migration "db/migrate/create_catalyst_executions.rb"
+    assert_file "config/initializers/catalyst.rb"
+    assert_file "app/ai/application_agent.rb"
+    assert_directory "app/ai"
   end
 
 

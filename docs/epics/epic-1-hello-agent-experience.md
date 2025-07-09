@@ -24,6 +24,8 @@ Create the fundamental ActiveRecord models (Agent, Execution) and installation g
 ### 1.1.1: Model Structure Alignment ✅ **COMPLETED**
 Align the Catalyst::Agent model structure with documented architecture requirements by adding LLM configuration fields (name, model, model_params), enhancing execution tracking, and updating defaults to support agentic behavior.
 
+### 1.1.2: Prompt File Generation for ApplicationAgent ⏳ **TODO**
+Add prompt file generation to `rails g catalyst:install` to match the behavior of `rails g catalyst:agent`, ensuring consistent developer experience across all Catalyst generators.
 ### 1.2: Agent Generation & Configuration ✅ **COMPLETED**
 Build a Rails generator that creates agent classes and prompt templates, enabling developers to quickly define new AI agents with role, goal, and backstory.
 
@@ -44,6 +46,7 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 
 ## Success Criteria
 - [x] Developer can install the framework with `rails g catalyst:install`
+- [ ] Install generator creates prompt files consistently with agent generator
 - [x] Developer can generate a new agent with `rails g catalyst:agent MyAgent`
 - [ ] Agent can be executed synchronously with `MyAgent.perform_now("prompt")`
 - [ ] Agent can be executed asynchronously with `MyAgent.perform_later("prompt")`
@@ -52,9 +55,10 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 - [ ] Cost control through max_iterations works correctly
 
 ## Definition of Done
-- [ ] All 6 stories completed with acceptance criteria met (Stories 1.1, 1.1.1, 1.2, 1.3, 1.4, 1.5)
+- [ ] All 7 stories completed with acceptance criteria met (Stories 1.1, 1.1.1, 1.1.2, 1.2, 1.3, 1.4, 1.5)
   - ✅ Story 1.1: Done
   - ✅ Story 1.1.1: Done
+  - ⏳ Story 1.1.2: TODO (Bug fix - prompt file generation gap)
   - ✅ Story 1.2: Done
   - ⏳ Story 1.3: Draft
   - ⏳ Story 1.4: Draft
@@ -68,9 +72,13 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 
 ## Timeline
 **Target: Sprint 1-2**
-- Stories 1.1, 1.1.1, 1.2: Foundation & Core Generation (Sprint 1) ✅ **COMPLETED**
-- Story 1.3: Core LLM Execution (Sprint 1) - **IN PROGRESS**
-- Stories 1.4-1.5: Enhanced capabilities (Sprint 2)
+- Stories 1.1, 1.1.1, 1.1.2: Foundation & Setup (Sprint 1) 
+  - ✅ Stories 1.1, 1.1.1: **COMPLETED**
+  - ⏳ Story 1.1.2: **TODO** (Bug fix - prompt generation gap)
+- Story 1.2: Agent Generation (Sprint 1) ✅ **COMPLETED**
+- Stories 1.3-1.5: Execution & Enhanced Capabilities (Sprint 1-2)
+  - ⏳ Story 1.3: Core LLM Execution - **IN PROGRESS**
+  - ⏳ Stories 1.4-1.5: Advanced Features (Sprint 2)
 
 ## Risks & Mitigation
 - **Risk:** OpenAI API reliability
