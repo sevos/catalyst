@@ -67,12 +67,12 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     )
 
     execution1 = agent.executions.create!(
-      status: "pending",
+      status: :pending,
       prompt: "First task"
     )
 
     execution2 = agent.executions.create!(
-      status: "completed",
+      status: :completed,
       prompt: "Second task",
       result: "Task completed successfully"
     )

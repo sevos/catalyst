@@ -17,7 +17,7 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
   test "creates execution with required attributes" do
     execution = Catalyst::Execution.create!(
       agent: @agent,
-      status: "pending",
+      status: :pending,
       prompt: "Complete this task"
     )
 
@@ -30,7 +30,7 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
   test "creates execution with result" do
     execution = Catalyst::Execution.create!(
       agent: @agent,
-      status: "completed",
+      status: :completed,
       prompt: "Calculate 2 + 2",
       result: "The answer is 4"
     )
@@ -43,7 +43,7 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
 
   test "validates presence of agent" do
     execution = Catalyst::Execution.new(
-      status: "pending",
+      status: :pending,
       prompt: "Test task"
     )
 
@@ -51,14 +51,14 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
     assert_includes execution.errors[:agent], "must exist"
   end
 
-  test "validates presence of status" do
+  test "has default status of pending" do
     execution = Catalyst::Execution.new(
       agent: @agent,
       prompt: "Test task"
     )
 
-    assert_not execution.valid?
-    assert_includes execution.errors[:status], "can't be blank"
+    assert_equal "pending", execution.status
+    assert execution.pending?
   end
 
   test "validates presence of prompt" do
@@ -72,7 +72,7 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
   end
 
   test "validates status is in allowed values" do
-    valid_statuses = [ "pending", "running", "completed", "failed" ]
+    valid_statuses = [ :pending, :running, :completed, :failed ]
 
     valid_statuses.each do |status|
       execution = Catalyst::Execution.new(
@@ -85,19 +85,19 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
 
     execution = Catalyst::Execution.new(
       agent: @agent,
-      status: "invalid_status",
       prompt: "Test task"
     )
 
-    assert_not execution.valid?
-    assert_includes execution.errors[:status], "is not included in the list"
+    assert_raises(ArgumentError) do
+      execution.status = "invalid_status"
+    end
   end
 
 
   test "belongs to agent" do
     execution = Catalyst::Execution.create!(
       agent: @agent,
-      status: "pending",
+      status: :pending,
       prompt: "Test task"
     )
 
@@ -114,7 +114,7 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
 
     execution = Catalyst::Execution.create!(
       agent: @agent,
-      status: "completed",
+      status: :completed,
       prompt: "Test task",
       result: "Task completed",
       metadata: metadata

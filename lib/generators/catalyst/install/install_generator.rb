@@ -47,10 +47,9 @@ module Catalyst
       say "  agent = ApplicationAgent.create!("
       say "    role: 'Assistant',"
       say "    goal: 'Help users with their questions',"
-      say "    backstory: 'I am a helpful AI assistant'"
+      say "    backstory: 'I am a helpful AI assistant',"
+      say "    agent_attributes: { max_iterations: 5 }"
       say "  )"
-      say ""
-      say "  catalyst_agent = Catalyst::Agent.create!(agentable: agent)"
       say ""
     end
   end
