@@ -18,8 +18,11 @@ Create the foundational components of the Catalyst framework that allow develope
 
 ## Stories
 
-### 1.1: Core Models & Installation
+### 1.1: Core Models & Installation ✅ **COMPLETED**
 Create the fundamental ActiveRecord models (Agent, Execution) and installation generator that provide the persistent foundation for all framework operations.
+
+### 1.1.1: Model Structure Alignment ✅ **COMPLETED**
+Align the Catalyst::Agent model structure with documented architecture requirements by adding LLM configuration fields (name, model, model_params), enhancing execution tracking, and updating defaults to support agentic behavior.
 
 ### 1.2: Agent Generation & Configuration
 Build a Rails generator that creates agent classes and prompt templates, enabling developers to quickly define new AI agents with role, goal, and backstory.
@@ -40,25 +43,26 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 - OpenAI API access for LLM integration
 
 ## Success Criteria
-- [ ] Developer can install the framework with `rails g catalyst:install`
+- [x] Developer can install the framework with `rails g catalyst:install`
 - [ ] Developer can generate a new agent with `rails g catalyst:agent MyAgent`
 - [ ] Agent can be executed synchronously with `MyAgent.perform_now("prompt")`
 - [ ] Agent can be executed asynchronously with `MyAgent.perform_later("prompt")`
-- [ ] Execution results are persisted and accessible
+- [x] Execution results are persisted and accessible
 - [ ] Framework handles errors gracefully
 - [ ] Cost control through max_iterations works correctly
 
 ## Definition of Done
-- [ ] All 5 stories completed with acceptance criteria met
-- [ ] Framework can be installed in a Rails application
+- [ ] All 6 stories completed with acceptance criteria met (Stories 1.1, 1.1.1, 1.2, 1.3, 1.4, 1.5)
+- [x] Framework can be installed in a Rails application
 - [ ] Basic agent execution works end-to-end
 - [ ] Documentation covers installation and basic usage
-- [ ] Tests verify all functionality
+- [x] Tests verify all functionality (for completed stories)
 - [ ] No security vulnerabilities in basic implementation
 
 ## Timeline
 **Target: Sprint 1-2**
-- Stories 1.1-1.3: Core functionality (Sprint 1)
+- Stories 1.1, 1.1.1: Foundation (Sprint 1) ✅ **COMPLETED**
+- Stories 1.2-1.3: Core functionality (Sprint 1)
 - Stories 1.4-1.5: Enhanced capabilities (Sprint 2)
 
 ## Risks & Mitigation
