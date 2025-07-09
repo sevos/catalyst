@@ -1,0 +1,35 @@
+# <%= class_name %> Prompt
+
+## Role
+<% if custom_attributes.any? %>
+[Define the role for this <%= class_name.underscore.humanize.downcase %>]
+<% else %>
+<%%= role %>
+<% end %>
+
+## Goal
+<% if custom_attributes.any? %>
+[Define the goal for this <%= class_name.underscore.humanize.downcase %>]
+<% else %>
+<%%= goal %>
+<% end %>
+
+## Backstory
+<% if custom_attributes.any? %>
+[Define the backstory for this <%= class_name.underscore.humanize.downcase %>]
+<% else %>
+<%%= backstory %>
+<% end %>
+
+<% if custom_attributes.any? %>
+## Custom Attributes
+<% parsed_attributes.each do |attr| %>
+- **<%= attr[:name].humanize %>**: <%%= <%= attr[:name] %> %>
+<% end %>
+<% end %>
+
+## Instructions
+Add your specific instructions for this agent here.
+
+## Context
+Use this section to provide context-specific information that will help the agent perform its tasks effectively.
