@@ -72,9 +72,13 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 
 ## Timeline
 **Target: Sprint 1-2**
-- Stories 1.1, 1.1.1, 1.2: Foundation & Core Generation (Sprint 1) ✅ **COMPLETED**
-- Story 1.3: Core LLM Execution (Sprint 1) - **IN PROGRESS**
-- Stories 1.4-1.5: Enhanced capabilities (Sprint 2)
+- Stories 1.1, 1.1.1, 1.1.2: Foundation & Setup (Sprint 1) 
+  - ✅ Stories 1.1, 1.1.1: **COMPLETED**
+  - ⏳ Story 1.1.2: **TODO** (Bug fix - prompt generation gap)
+- Story 1.2: Agent Generation (Sprint 1) ✅ **COMPLETED**
+- Stories 1.3-1.5: Execution & Enhanced Capabilities (Sprint 1-2)
+  - ⏳ Story 1.3: Core LLM Execution - **IN PROGRESS**
+  - ⏳ Stories 1.4-1.5: Advanced Features (Sprint 2)
 
 ## Risks & Mitigation
 - **Risk:** OpenAI API reliability
