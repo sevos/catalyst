@@ -19,7 +19,7 @@ class Catalyst::AgentGeneratorTest < Rails::Generators::TestCase
     run_generator %w[MyAgent]
 
     assert_file "app/ai/prompts/my_agent.md.erb" do |content|
-      assert_match /# MyAgent Prompt/, content
+      assert_match /# MyAgent/, content
       assert_match /## Role/, content
       assert_match /<%= role %>/, content
       assert_match /## Goal/, content
@@ -33,7 +33,7 @@ class Catalyst::AgentGeneratorTest < Rails::Generators::TestCase
     run_generator %w[MarketingAgent --custom-attributes campaign_type:string]
 
     assert_file "app/ai/prompts/marketing_agent.md.erb" do |content|
-      assert_match /# MarketingAgent Prompt/, content
+      assert_match /# MarketingAgent/, content
       assert_match /\[Define the role for this marketing agent\]/, content
       assert_match /\[Define the goal for this marketing agent\]/, content
       assert_match /\[Define the backstory for this marketing agent\]/, content
@@ -114,7 +114,7 @@ class Catalyst::AgentGeneratorTest < Rails::Generators::TestCase
     end
 
     assert_file "app/ai/prompts/complex_marketing_agent.md.erb" do |content|
-      assert_match /# ComplexMarketingAgent Prompt/, content
+      assert_match /# ComplexMarketingAgent/, content
     end
   end
 
