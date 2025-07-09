@@ -48,7 +48,17 @@ graph TD
     G -- Connects --> I
 ```
 
-### **2.3. Architectural and Design Patterns**
+### **2.3. Technology Stack**
+
+The Catalyst Framework leverages a modern, production-ready technology stack that prioritizes developer experience and maintainability:
+
+* **Ruby on Rails 8 mountable engine** - Provides the core framework structure with proper namespace isolation
+* **Minitest for testing** - Testing framework with test/dummy app for comprehensive engine testing
+* **Frontend Stack:**
+  - **Hotwire/Turbo/Stimulus** - Modern Rails frontend approach for reactive UIs without complex JavaScript frameworks
+  - **TailwindCSS** - Utility-first CSS framework for rapid UI development
+
+### **2.4. Architectural and Design Patterns**
 
 The framework will be built upon a foundation of standard, robust software design patterns that are familiar to Rails developers.
 
