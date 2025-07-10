@@ -1,7 +1,7 @@
 module Catalyst
   class Agent < ApplicationRecord
     self.table_name = "catalyst_agents"
-    
+
     # JSON serialization for SQLite compatibility
     serialize :model_params, coder: JSON
 

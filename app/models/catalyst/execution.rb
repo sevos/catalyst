@@ -1,7 +1,7 @@
 module Catalyst
   class Execution < ApplicationRecord
     self.table_name = "catalyst_executions"
-    
+
     # JSON serialization for SQLite compatibility
     serialize :input_params, coder: JSON
 
