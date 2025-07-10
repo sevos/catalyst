@@ -26,23 +26,23 @@ chat.ask("Tell me more about that")  # Maintains context
 
 ### 2. ActiveRecord Integration Pattern
 
-RubyLLM's `acts_as_chat` and `acts_as_message` macros provide Rails-native persistence:
+RubyLLM provides LLM provider abstraction without requiring ActiveRecord macros. Catalyst implements custom chat-like fields to avoid namespace pollution:
 
 ```ruby
 class Execution < ApplicationRecord
-  acts_as_chat
-  # Automatically gains:
-  # - Message association
-  # - Conversation tracking
-  # - Model configuration
+  # Custom chat-like fields for interaction tracking
+  # - interaction_count (integer)
+  # - last_interaction_at (datetime)
+  # - input_params (json, serialized)
+  # No message content storage to avoid namespace pollution
 end
 ```
 
 **Benefits for Catalyst**:
-- Automatic message history
-- Built-in conversation replay
-- Database-backed persistence
-- No custom message models needed
+- Clean namespace without `acts_as_chat`/`acts_as_message` pollution
+- Custom interaction tracking tailored to agent needs
+- Separation of concerns: RubyLLM handles LLM, Catalyst handles persistence
+- Flexibility to store agent-specific metadata
 
 ### 3. Provider Abstraction Pattern
 
@@ -162,17 +162,17 @@ end
 
 ### Direct Integration Advantages
 
-1. **No Abstraction Layer**: Use RubyLLM directly without wrappers
+1. **Clean Separation**: Use RubyLLM as LLM service, custom persistence layer
 2. **Rails Conventions**: Follows Rails patterns developers expect
 3. **Minimal Configuration**: Simple setup through initializer
 4. **Future-Proof**: Easy upgrades as RubyLLM evolves
 
 ### Execution as Chat Benefits
 
-1. **Conversation History**: Automatic message tracking
-2. **Replay Capability**: Re-examine past executions
-3. **Debugging Support**: Full conversation visibility
-4. **Analytics Ready**: Query conversation patterns
+1. **Interaction Tracking**: Custom fields for counting and timing
+2. **Input Parameter Storage**: Agent-specific parameter persistence
+3. **Debugging Support**: Execution metadata visibility
+4. **Analytics Ready**: Query interaction patterns and parameters
 
 ### Model Management Benefits
 
@@ -194,7 +194,11 @@ rails g catalyst:install
 ### 2. **Execution Model**
 ```ruby
 class Catalyst::Execution < ApplicationRecord
-  acts_as_chat  # Full RubyLLM chat capabilities
+  # Chat-like tracking fields without acts_as_chat
+  # - interaction_count for counting interactions
+  # - last_interaction_at for timestamp tracking
+  # - input_params for storing agent input parameters
+  # Uses RubyLLM as service layer, not ActiveRecord integration
 end
 ```
 
@@ -262,4 +266,4 @@ RubyLLM's patterns align perfectly with Catalyst's goals:
 - Production-ready features
 - Extensible architecture
 
-By leveraging RubyLLM's patterns directly, Catalyst can focus on agent orchestration and business logic while delegating LLM complexity to a well-tested, actively maintained library.
+By leveraging RubyLLM as a service layer with custom persistence, Catalyst can focus on agent orchestration and business logic while delegating LLM complexity to a well-tested, actively maintained library without namespace pollution.
