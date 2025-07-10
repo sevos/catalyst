@@ -26,8 +26,12 @@ Align the Catalyst::Agent model structure with documented architecture requireme
 
 ### 1.1.2: Prompt File Generation for ApplicationAgent ⏳ **TODO**
 Add prompt file generation to `rails g catalyst:install` to match the behavior of `rails g catalyst:agent`, ensuring consistent developer experience across all Catalyst generators.
+
 ### 1.2: Agent Generation & Configuration ✅ **COMPLETED**
 Build a Rails generator that creates agent classes and prompt templates, enabling developers to quickly define new AI agents with role, goal, and backstory.
+
+### 1.2.1: RubyLLM Integration ⏳ **TODO**
+Integrate RubyLLM as the LLM provider layer, adding the dependency, configuration initializer, and ActiveRecord integration to enable unified access to multiple AI providers.
 
 ### 1.3: Default LLM Adapter & Basic Execution
 Implement a configurable LLM adapter (OpenAI) that can execute agent prompts and store results, providing the core execution capability.
@@ -55,11 +59,12 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 - [ ] Cost control through max_iterations works correctly
 
 ## Definition of Done
-- [ ] All 7 stories completed with acceptance criteria met (Stories 1.1, 1.1.1, 1.1.2, 1.2, 1.3, 1.4, 1.5)
+- [ ] All 8 stories completed with acceptance criteria met (Stories 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.3, 1.4, 1.5)
   - ✅ Story 1.1: Done
   - ✅ Story 1.1.1: Done
   - ⏳ Story 1.1.2: TODO (Bug fix - prompt file generation gap)
   - ✅ Story 1.2: Done
+  - ⏳ Story 1.2.1: Draft (RubyLLM integration)
   - ⏳ Story 1.3: Draft
   - ⏳ Story 1.4: Draft
   - ⏳ Story 1.5: Draft
@@ -75,7 +80,9 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 - Stories 1.1, 1.1.1, 1.1.2: Foundation & Setup (Sprint 1) 
   - ✅ Stories 1.1, 1.1.1: **COMPLETED**
   - ⏳ Story 1.1.2: **TODO** (Bug fix - prompt generation gap)
-- Story 1.2: Agent Generation (Sprint 1) ✅ **COMPLETED**
+- Story 1.2, 1.2.1: Agent Generation & LLM Setup (Sprint 1)
+  - ✅ Story 1.2: Agent Generation **COMPLETED**
+  - ⏳ Story 1.2.1: RubyLLM Integration **TODO**
 - Stories 1.3-1.5: Execution & Enhanced Capabilities (Sprint 1-2)
   - ⏳ Story 1.3: Core LLM Execution - **IN PROGRESS**
   - ⏳ Stories 1.4-1.5: Advanced Features (Sprint 2)
