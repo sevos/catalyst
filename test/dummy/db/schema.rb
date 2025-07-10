@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 5) do
+ActiveRecord::Schema[8.0].define(version: 6) do
   create_table "application_agents", force: :cascade do |t|
     t.string "role"
     t.text "goal"
@@ -42,6 +42,9 @@ ActiveRecord::Schema[8.0].define(version: 5) do
     t.text "error_message"
     t.datetime "started_at"
     t.datetime "completed_at"
+    t.integer "interaction_count", default: 0, null: false
+    t.datetime "last_interaction_at"
+    t.text "input_params"
     t.index [ "agent_id" ], name: "index_catalyst_executions_on_agent_id"
   end
 

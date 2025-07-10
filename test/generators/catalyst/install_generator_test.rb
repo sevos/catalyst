@@ -37,6 +37,9 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
       assert_match(/t\.datetime :started_at/, migration)
       assert_match(/t\.datetime :completed_at/, migration)
       assert_match(/t\.json :metadata/, migration)
+      assert_match(/t\.integer :interaction_count, default: 0, null: false/, migration)
+      assert_match(/t\.datetime :last_interaction_at/, migration)
+      assert_match(/t\.text :input_params/, migration)
     end
   end
 
@@ -121,6 +124,41 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
     assert_file "config/initializers/catalyst.rb"
     assert_file "app/ai/application_agent.rb"
     assert_directory "app/ai"
+  end
+
+  test "gemspec includes ruby_llm dependency" do
+    # Read the gemspec file
+    gemspec_path = File.expand_path("../../../catalyst.gemspec", __dir__)
+    gemspec_content = File.read(gemspec_path)
+
+    # Assert ruby_llm dependency is present
+    assert_match(/spec\.add_dependency "ruby_llm", "~> 1\.3"/, gemspec_content)
+  end
+
+  test "generates ruby_llm initializer" do
+    run_generator
+
+    assert_file "config/initializers/ruby_llm.rb" do |initializer|
+      assert_match(/RubyLLM\.configure do \|config\|/, initializer)
+      assert_match(/config\.openai_api_key = ENV\.fetch\('OPENAI_API_KEY', nil\) \|\|/, initializer)
+      assert_match(/Rails\.application\.credentials\.dig\(:catalyst, :openai_api_key\)/, initializer)
+      assert_match(/config\.default_model = 'gpt-4\.1-nano'/, initializer)
+      assert_match(/config\.default_embedding_model = 'text-embedding-3-small'/, initializer)
+      assert_match(/config\.request_timeout = 120/, initializer)
+      assert_match(/config\.max_retries = 3/, initializer)
+      assert_match(/config\.anthropic_api_key = ENV\.fetch\('ANTHROPIC_API_KEY', nil\) \|\|/, initializer)
+      assert_match(/config\.gemini_api_key = ENV\.fetch\('GEMINI_API_KEY', nil\) \|\|/, initializer)
+      assert_match(/config\.log_file = Rails\.root\.join\('log\/ruby_llm\.log'\)/, initializer)
+      assert_match(/config\.log_level = Rails\.env\.development\? \? :debug : :info/, initializer)
+    end
+  end
+
+  test "does not overwrite existing ruby_llm initializer" do
+    create_file "config/initializers/ruby_llm.rb", "# existing ruby_llm content"
+
+    run_generator
+
+    assert_file "config/initializers/ruby_llm.rb", "# existing ruby_llm content"
   end
 
 

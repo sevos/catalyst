@@ -1,5 +1,7 @@
 module Catalyst
   class Execution < ApplicationRecord
+    include Catalyst::InputParameterizable
+    
     self.table_name = "catalyst_executions"
 
     enum :status, {
@@ -11,6 +13,7 @@ module Catalyst
 
     validates :agent, presence: true
     validates :prompt, presence: true
+    validates :interaction_count, presence: true, numericality: { greater_than_or_equal_to: 0 }
     validate :validate_timestamps_consistency
 
     belongs_to :agent, class_name: "Catalyst::Agent"
@@ -46,6 +49,13 @@ module Catalyst
     def duration
       return nil unless started_at && completed_at
       completed_at - started_at
+    end
+
+    # Update interaction tracking
+    def increment_interaction!
+      self.interaction_count = (interaction_count || 0) + 1
+      self.last_interaction_at = Time.current
+      save!
     end
 
     private

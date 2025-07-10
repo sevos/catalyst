@@ -269,4 +269,163 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
     assert_not execution.valid?
     assert_includes execution.errors[:completed_at], "must be after started_at"
   end
+
+  # Tests for new chat-like fields and parameter management
+  test "creates execution with default interaction_count of 0" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task"
+    )
+
+    assert_equal 0, execution.interaction_count
+    assert_nil execution.last_interaction_at
+  end
+
+  test "validates interaction_count is non-negative" do
+    execution = Catalyst::Execution.new(
+      agent: @agent,
+      prompt: "Test task",
+      interaction_count: -1
+    )
+
+    assert_not execution.valid?
+    assert_includes execution.errors[:interaction_count], "must be greater than or equal to 0"
+  end
+
+  test "input_parameters returns empty hash when input_params is nil" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task"
+    )
+
+    assert_equal({}, execution.input_parameters)
+  end
+
+  test "input_parameters stores and retrieves parameters" do
+    params = { "temperature" => 0.7, "max_tokens" => 150 }
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task",
+      input_params: params
+    )
+
+    assert_equal params, execution.input_parameters
+    assert_equal params, execution.input_params
+  end
+
+  test "input_parameters= sets parameters correctly" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task"
+    )
+
+    params = { "model" => "gpt-4.1-nano", "temperature" => 0.8 }
+    execution.input_parameters = params
+
+    assert_equal params, execution.input_parameters
+  end
+
+  test "input_parameter returns specific parameter value" do
+    params = { "temperature" => 0.7, "max_tokens" => 150 }
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task",
+      input_params: params
+    )
+
+    assert_equal 0.7, execution.input_parameter("temperature")
+    assert_equal 150, execution.input_parameter("max_tokens")
+    assert_nil execution.input_parameter("nonexistent")
+  end
+
+  test "input_parameter accepts symbol keys" do
+    params = { "temperature" => 0.7 }
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task",
+      input_params: params
+    )
+
+    assert_equal 0.7, execution.input_parameter(:temperature)
+  end
+
+  test "set_input_parameter adds new parameter" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task"
+    )
+
+    execution.set_input_parameter("temperature", 0.9)
+
+    assert_equal 0.9, execution.input_parameter("temperature")
+    assert_equal({ "temperature" => 0.9 }, execution.input_parameters)
+  end
+
+  test "set_input_parameter updates existing parameter" do
+    params = { "temperature" => 0.7, "max_tokens" => 150 }
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task",
+      input_params: params
+    )
+
+    execution.set_input_parameter("temperature", 0.9)
+
+    assert_equal 0.9, execution.input_parameter("temperature")
+    assert_equal 150, execution.input_parameter("max_tokens")
+  end
+
+  test "set_input_parameter accepts symbol keys" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task"
+    )
+
+    execution.set_input_parameter(:temperature, 0.9)
+
+    assert_equal 0.9, execution.input_parameter("temperature")
+  end
+
+  test "increment_interaction! increases count and updates timestamp" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task",
+      interaction_count: 0
+    )
+
+    assert_nil execution.last_interaction_at
+
+    execution.increment_interaction!
+
+    assert_equal 1, execution.interaction_count
+    assert_not_nil execution.last_interaction_at
+    assert_in_delta Time.current, execution.last_interaction_at, 1.second
+  end
+
+  test "increment_interaction! works with zero interaction_count" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task",
+      interaction_count: 0
+    )
+
+    execution.increment_interaction!
+
+    assert_equal 1, execution.interaction_count
+    assert_not_nil execution.last_interaction_at
+  end
+
+  test "increment_interaction! persists changes to database" do
+    execution = Catalyst::Execution.create!(
+      agent: @agent,
+      prompt: "Test task",
+      interaction_count: 2
+    )
+
+    execution.increment_interaction!
+
+    execution.reload
+    assert_equal 3, execution.interaction_count
+    assert_not_nil execution.last_interaction_at
+  end
 end
