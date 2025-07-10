@@ -6,8 +6,14 @@
 
 * **Story 1.1: Core Models & Installation**  
   * Create Agent and Execution ActiveRecord models and an installation generator for migrations.  
+* **Story 1.1.1: Model Structure Alignment**  
+  * Align the Catalyst::Agent model structure with documented architecture requirements by adding LLM configuration fields (name, model, model_params), enhancing execution tracking, and updating defaults to support agentic behavior.  
+* **Story 1.1.2: Prompt File Generation for ApplicationAgent**  
+  * Add prompt file generation to `rails g catalyst:install` to match the behavior of `rails g catalyst:agent`, ensuring consistent developer experience across all Catalyst generators.  
 * **Story 1.2: Agent Generation & Configuration**  
   * Create a Rails generator (rails g catalyst:agent) for Agent classes and ERB prompt templates.  
+* **Story 1.2.1: RubyLLM Integration**  
+  * Integrate RubyLLM as the LLM provider layer, adding the dependency, configuration initializer, and ActiveRecord integration to enable unified access to multiple AI providers.  
 * **Story 1.3: Single Agent Execution API**  
   * Implement single agent execution capability that processes agent configuration, input parameters, and user messages to generate system prompts and execute single LLM requests via RubyLLM integration.  
 * **Story 1.4: Agentic Iteration Loop & Limits**  
