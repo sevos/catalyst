@@ -24,13 +24,13 @@ Create the fundamental ActiveRecord models (Agent, Execution) and installation g
 ### 1.1.1: Model Structure Alignment ✅ **COMPLETED**
 Align the Catalyst::Agent model structure with documented architecture requirements by adding LLM configuration fields (name, model, model_params), enhancing execution tracking, and updating defaults to support agentic behavior.
 
-### 1.1.2: Prompt File Generation for ApplicationAgent ⏳ **TODO**
+### 1.1.2: Prompt File Generation for ApplicationAgent ✅ **COMPLETED**
 Add prompt file generation to `rails g catalyst:install` to match the behavior of `rails g catalyst:agent`, ensuring consistent developer experience across all Catalyst generators.
 
 ### 1.2: Agent Generation & Configuration ✅ **COMPLETED**
 Build a Rails generator that creates agent classes and prompt templates, enabling developers to quickly define new AI agents with role, goal, and backstory.
 
-### 1.2.1: RubyLLM Integration ⏳ **TODO**
+### 1.2.1: RubyLLM Integration ✅ **COMPLETED**
 Integrate RubyLLM as the LLM provider layer, adding the dependency, configuration initializer, and ActiveRecord integration to enable unified access to multiple AI providers.
 
 ### 1.3: Default LLM Adapter & Basic Execution
@@ -50,7 +50,7 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 
 ## Success Criteria
 - [x] Developer can install the framework with `rails g catalyst:install`
-- [ ] Install generator creates prompt files consistently with agent generator
+- [x] Install generator creates prompt files consistently with agent generator
 - [x] Developer can generate a new agent with `rails g catalyst:agent MyAgent`
 - [ ] Agent can be executed synchronously with `MyAgent.perform_now("prompt")`
 - [ ] Agent can be executed asynchronously with `MyAgent.perform_later("prompt")`
@@ -62,9 +62,9 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 - [ ] All 8 stories completed with acceptance criteria met (Stories 1.1, 1.1.1, 1.1.2, 1.2, 1.2.1, 1.3, 1.4, 1.5)
   - ✅ Story 1.1: Done
   - ✅ Story 1.1.1: Done
-  - ⏳ Story 1.1.2: TODO (Bug fix - prompt file generation gap)
+  - ✅ Story 1.1.2: Done (prompt file generation gap fixed)
   - ✅ Story 1.2: Done
-  - ⏳ Story 1.2.1: Draft (RubyLLM integration)
+  - ✅ Story 1.2.1: Done (RubyLLM integration complete)
   - ⏳ Story 1.3: Draft
   - ⏳ Story 1.4: Draft
   - ⏳ Story 1.5: Draft
@@ -76,15 +76,17 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 - [ ] No security vulnerabilities in basic implementation
 
 ## Timeline
-**Target: Sprint 1-2**
+**Target: Sprint 1-2** | **Progress: 5/8 stories complete (62.5%)**
+
 - Stories 1.1, 1.1.1, 1.1.2: Foundation & Setup (Sprint 1) 
-  - ✅ Stories 1.1, 1.1.1: **COMPLETED**
-  - ⏳ Story 1.1.2: **TODO** (Bug fix - prompt generation gap)
+  - ✅ Story 1.1: **COMPLETED**
+  - ✅ Story 1.1.1: **COMPLETED**
+  - ✅ Story 1.1.2: **COMPLETED** (Bug fix - prompt generation gap)
 - Story 1.2, 1.2.1: Agent Generation & LLM Setup (Sprint 1)
   - ✅ Story 1.2: Agent Generation **COMPLETED**
-  - ⏳ Story 1.2.1: RubyLLM Integration **TODO**
+  - ✅ Story 1.2.1: RubyLLM Integration **COMPLETED**
 - Stories 1.3-1.5: Execution & Enhanced Capabilities (Sprint 1-2)
-  - ⏳ Story 1.3: Core LLM Execution - **IN PROGRESS**
+  - ⏳ Story 1.3: Core LLM Execution - **NEXT UP**
   - ⏳ Stories 1.4-1.5: Advanced Features (Sprint 2)
 
 ## Risks & Mitigation

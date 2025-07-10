@@ -1,28 +1,72 @@
-# Catalyst
-Short description and motivation.
+# Catalyst Framework
 
-## Usage
-How to use my plugin.
+A Ruby on Rails engine for orchestrating AI agents with built-in observability, multi-tenancy, and asynchronous processing.
+
+## 🚧 Development Status
+
+**Current Status:** Early Development - Epic 1 in Progress  
+**Progress:** 5/16 stories complete (31.25%)
+
+### Epic Progress
+| Epic | Progress | Status |
+|------|----------|--------|
+| **Epic 1: "Hello, Agent!" Experience** | 5/8 (62.5%) | 🟡 **In Progress** |
+| Epic 2: "Useful Agent" - Tooling & Outputs | 0/3 (0%) | ⏸️ Pending |
+| Epic 3: "Observable Agent" - UI | 0/2 (0%) | ⏸️ Pending |
+| Epic 4: "Secure & Production-Ready Agent" | 0/3 (0%) | ⏸️ Pending |
+
+### ✅ Completed Features
+- **Core Models & Installation** - Rails generator with Agent and Execution models
+- **Model Structure Alignment** - LLM configuration and execution tracking
+- **Prompt File Generation** - Consistent generator behavior across framework
+- **Agent Generation** - `rails g catalyst:agent` for creating custom agents
+- **RubyLLM Integration** - Multi-provider LLM support (OpenAI, Anthropic, Gemini)
+
+### 🔄 Next Up
+- **Default LLM Adapter & Basic Execution** - Core agent execution capability
 
 ## Installation
-Add this line to your application's Gemfile:
+
+⚠️ **Note:** This gem is currently in early development and not yet published.
+
+For development/testing:
 
 ```ruby
-gem "catalyst"
+# Add to your Rails application's Gemfile
+gem "catalyst", path: "path/to/catalyst"
 ```
 
-And then execute:
+Then run:
 ```bash
-$ bundle
+bundle install
+rails g catalyst:install
 ```
 
-Or install it yourself as:
-```bash
-$ gem install catalyst
-```
+## Quick Start
+
+1. **Install the framework:**
+   ```bash
+   rails g catalyst:install
+   rails db:migrate
+   ```
+
+2. **Create an agent:**
+   ```bash
+   rails g catalyst:agent MyAgent
+   ```
+
+3. **Configure API keys** (see `config/initializers/ruby_llm.rb`)
+
+## Documentation
+
+- **[Product Requirements](docs/prd.md)** - Complete feature specifications
+- **[Architecture](docs/architecture.md)** - Technical design and patterns  
+- **[Epic 1 Progress](docs/epics/epic-1-hello-agent-experience.md)** - Current development status
 
 ## Contributing
-Contribution directions go here.
+
+This project is in active development. See our [PRD](docs/prd.md) for the complete roadmap.
 
 ## License
+
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
