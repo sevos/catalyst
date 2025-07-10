@@ -10,6 +10,13 @@ class CreateCatalystExecutions < ActiveRecord::Migration[<%= ActiveRecord::Migra
       t.datetime :completed_at
       t.json :metadata
       
+      # Chat-like fields for tracking interactions
+      t.integer :interaction_count, default: 0, null: false
+      t.datetime :last_interaction_at
+      
+      # Input parameters field (SQLite compatible with JSON serialization)
+      t.text :input_params
+      
       t.timestamps
     end
   end

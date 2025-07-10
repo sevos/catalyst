@@ -1,0 +1,32 @@
+# RubyLLM Configuration for Catalyst Framework
+# This initializer configures RubyLLM with multiple providers and sensible defaults
+
+RubyLLM.configure do |config|
+  # OpenAI Configuration (Default Provider)
+  config.openai_api_key = ENV.fetch('OPENAI_API_KEY', nil) || 
+                          Rails.application.credentials.dig(:catalyst, :openai_api_key)
+  
+  # Default Models
+  config.default_model = 'gpt-4.1-nano'
+  config.default_embedding_model = 'text-embedding-3-small'
+  
+  # Connection Settings
+  config.request_timeout = 120
+  config.max_retries = 3
+  
+  # Additional providers (configure as needed)
+  config.anthropic_api_key = ENV.fetch('ANTHROPIC_API_KEY', nil) || 
+                             Rails.application.credentials.dig(:catalyst, :anthropic_api_key)
+  config.gemini_api_key = ENV.fetch('GEMINI_API_KEY', nil) || 
+                          Rails.application.credentials.dig(:catalyst, :gemini_api_key)
+  
+  # Logging Configuration
+  config.log_file = Rails.root.join('log/ruby_llm.log') if defined?(Rails)
+  config.log_level = Rails.env.development? ? :debug : :info
+  
+  # Environment-specific settings
+  if Rails.env.test?
+    # Enable test mode for testing
+    config.log_level = :warn
+  end
+end

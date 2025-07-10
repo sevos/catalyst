@@ -1,8 +1,9 @@
 module Catalyst
   class Agent < ApplicationRecord
-    include Catalyst::ModelConfigurable
-
     self.table_name = "catalyst_agents"
+
+    # JSON serialization for SQLite compatibility
+    serialize :model_params, coder: JSON
 
     validates :name, presence: true
     validates :max_iterations, presence: true, numericality: { greater_than: 0 }

@@ -15,7 +15,9 @@ The Catalyst Framework addresses a critical gap in the Ruby on Rails ecosystem. 
 ### **Change Log**
 
 | Date | Version | Description | Author |  
-| | 1.0 | Initial PRD | John (PM) |
+|------|---------|-------------|--------|
+| 2025-01-08 | 1.0 | Initial PRD | John (PM) |
+| 2025-07-10 | 1.1 | Updated Epic 1 with actual story inventory and completion status - 5/8 stories done (62.5%) | Sarah (PO) |
 
 ## **2\. Requirements**
 
@@ -50,50 +52,73 @@ The Catalyst Framework addresses a critical gap in the Ruby on Rails ecosystem. 
 
 ## **4\. Epics & Stories**
 
+### **📊 Overall Project Progress: 5/16 stories complete (31.25%)**
+
+| Epic | Progress | Status |
+|------|----------|--------|
+| Epic 1: "Hello, Agent!" Experience | 5/8 (62.5%) | 🟡 **In Progress** |
+| Epic 2: "Useful Agent" - Tooling & Outputs | 0/3 (0%) | ⏸️ **Pending** |
+| Epic 3: "Observable Agent" - UI | 0/2 (0%) | ⏸️ **Pending** |
+| Epic 4: "Secure & Production-Ready Agent" | 0/3 (0%) | ⏸️ **Pending** |
+
 ### **Epic 1: The "Hello, Agent\!" Experience**
 
 **Goal:** Enable a developer to generate a basic agent, configure it with a prompt, execute a simple task asynchronously via ActiveJob, and successfully get a result from a default LLM.
 
-* **Story 1.1: Core Models & Installation**  
+**Progress: 5/8 stories complete (62.5%)**
+
+* **Story 1.1: Core Models & Installation** ✅ **DONE**  
   * Create Agent and Execution ActiveRecord models and an installation generator for migrations.  
-* **Story 1.2: Agent Generation & Configuration**  
+* **Story 1.1.1: Model Structure Alignment** ✅ **DONE**  
+  * Align Catalyst::Agent model structure with architecture requirements for LLM configuration and execution tracking.  
+* **Story 1.1.2: Prompt File Generation Gap** ✅ **DONE**  
+  * Add prompt file generation to `rails g catalyst:install` for consistency with `rails g catalyst:agent`.  
+* **Story 1.2: Agent Generation & Configuration** ✅ **DONE**  
   * Create a Rails generator (rails g catalyst:agent) for Agent classes and ERB prompt templates.  
-* **Story 1.3: Default LLM Adapter & Basic Execution**  
+* **Story 1.2.1: RubyLLM Integration** ✅ **DONE**  
+  * Integrate RubyLLM as the LLM provider layer with comprehensive configuration and execution tracking.  
+* **Story 1.3: Default LLM Adapter & Basic Execution** ⏳ **DRAFT**  
   * Implement a default, configurable LLM adapter (e.g., for OpenAI) to execute a basic prompt.  
-* **Story 1.4: Agentic Iteration Loop & Limits**  
+* **Story 1.4: Agentic Iteration Loop & Limits** ⏳ **DRAFT**  
   * Implement a max\_iterations limit for an Agent to control its reasoning loop.  
-* **Story 1.5: Asynchronous Execution via ActiveJob**  
+* **Story 1.5: Asynchronous Execution via ActiveJob** ⏳ **DRAFT**  
   * Wrap the agent execution logic in an ActiveJob to be triggered via perform\_later.
 
 ### **Epic 2: The "Useful Agent" — Tooling & Outputs**
 
 **Goal:** Empower the agent to perform useful work by calling registered Tool Objects and returning validated, structured data using an ActiveModel schema.
 
-* **Story 2.1: Reusable Tool Definition & Registration**  
+**Progress: 0/3 stories complete (0%)**
+
+* **Story 2.1: Reusable Tool Definition & Registration** ⏳ **DRAFT**  
   * Define a standard interface for standalone Tool objects and allow them to be registered with an Agent. Enforce keyword arguments for tools.  
-* **Story 2.2: Tool Execution Loop**  
+* **Story 2.2: Tool Execution Loop** ⏳ **DRAFT**  
   * Enhance the agent's iteration loop to support a "ReAct" pattern: parse a tool call from the LLM, execute the tool's \#call method, and return the result to the agent's context.  
-* **Story 2.3: Robust Structured Output & Self-Correction**  
+* **Story 2.3: Robust Structured Output & Self-Correction** ⏳ **DRAFT**  
   * Implement the output\_schema feature, allowing an agent to attempt to self-correct its JSON output if it fails ActiveModel validation.
 
 ### **Epic 3: The "Observable Agent" (Proof-of-Concept UI)**
 
 **Goal:** To provide early visibility by building the backend logging for execution traces and creating a proof-of-concept dashboard to display them.
 
-* **Story 3.1: Basic Execution Monitoring**  
+**Progress: 0/2 stories complete (0%)**
+
+* **Story 3.1: Basic Execution Monitoring** ⏳ **DRAFT**  
   * Create an Execution model that stores initial input and final output. Build a dashboard index page and a simple show page to display this data, styled with Tailwind and updated via Hotwire.  
-* **Story 3.2: Detailed Execution Trace**  
+* **Story 3.2: Detailed Execution Trace** ⏳ **DRAFT**  
   * Create an ExecutionStep model to log detailed events (thoughts, tool calls). Enhance the execution show page to display this full, real-time chronological trace.
 
 ### **Epic 4: The "Secure & Production-Ready Agent"**
 
 **Goal:** To harden the framework for production by implementing the secure context model and providing clear integration points for multi-tenancy.
 
-* **Story 4.1: Research Secure Context & MCP Compatibility**  
+**Progress: 0/3 stories complete (0%)**
+
+* **Story 4.1: Research Secure Context & MCP Compatibility** ⏳ **DRAFT**  
   * Analyze best practices for secure context injection and their alignment with the Model Context Protocol (MCP), producing an Architectural Decision Record (ADR).  
-* **Story 4.2: Implement Secure Context Passing**  
+* **Story 4.2: Implement Secure Context Passing** ⏳ **DRAFT**  
   * Implement the chosen secure context mechanism, allowing tools to declare their data needs and receive only those values from the context.  
-* **Story 4.3: Multi-Tenancy Integration Support**  
+* **Story 4.3: Multi-Tenancy Integration Support** ⏳ **DRAFT**  
   * Update models and jobs to support tenant scoping and provide comprehensive documentation for integrating with gems like acts\_as\_tenant.  
 * **Story 4.4: Secure Tool Argument Passing**  
   * Enhance the tool schema to allow marking certain arguments as "context-provided," which are securely injected by the framework and hidden from the LLM.

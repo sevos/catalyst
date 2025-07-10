@@ -24,6 +24,11 @@ module Catalyst
       template "catalyst_initializer.rb", "config/initializers/catalyst.rb" unless File.exist?(initializer_path)
     end
 
+    def create_ruby_llm_initializer
+      ruby_llm_initializer_path = File.join(destination_root, "config/initializers/ruby_llm.rb")
+      template "ruby_llm.rb.tt", "config/initializers/ruby_llm.rb" unless File.exist?(ruby_llm_initializer_path)
+    end
+
     def create_ai_directory
       empty_directory "app/ai"
       empty_directory "app/ai/prompts"
@@ -45,8 +50,14 @@ module Catalyst
       say ""
       say "Next steps:"
       say "1. Run `rails db:migrate` to create the database tables"
-      say "2. Your ApplicationAgent model is ready to use in app/ai/application_agent.rb"
-      say "3. Check config/initializers/catalyst.rb to configure agent types"
+      say "2. Configure your API keys for RubyLLM:"
+      say "   - Set OPENAI_API_KEY environment variable, or"
+      say "   - Add to Rails credentials: rails credentials:edit"
+      say "     catalyst:"
+      say "       openai_api_key: your_openai_api_key"
+      say "3. Your ApplicationAgent model is ready to use in app/ai/application_agent.rb"
+      say "4. Check config/initializers/catalyst.rb to configure agent types"
+      say "5. Check config/initializers/ruby_llm.rb for LLM provider configuration"
       say ""
       say "Example usage:"
       say "  agent = ApplicationAgent.create!("
@@ -55,6 +66,9 @@ module Catalyst
       say "    backstory: 'I am a helpful AI assistant',"
       say "    agent_attributes: { max_iterations: 5 }"
       say "  )"
+      say ""
+      say "RubyLLM is configured with OpenAI as the default provider using gpt-4.1-nano model."
+      say "Additional providers (Anthropic, Gemini) can be configured in config/initializers/ruby_llm.rb"
       say ""
     end
   end
