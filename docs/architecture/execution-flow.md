@@ -11,9 +11,14 @@ The Catalyst Framework's execution flow is designed around **asynchronous proces
 # From host application
 agent = MyAgent.create(
   application_agent_attributes: {
-    system_prompt: "You are a helpful marketing assistant...",
-    model: "gpt-4",
-    temperature: 0.7
+    role: "Marketing Assistant",
+    goal: "Create compelling marketing content",
+    backstory: "Expert in brand marketing"
+  },
+  agent_attributes: {
+    name: "Marketing Agent",
+    model: "gpt-4.1-nano",
+    model_params: { "temperature" => 0.7 }
   }
 )
 
@@ -77,11 +82,26 @@ class Catalyst::ExecutionJob < ApplicationJob
   def execute_agent_logic(execution)
     agent = execution.agent
     
-    # 1. Construct the full prompt
+    # 1. Prepare execution parameters
+    execution_params = prepare_execution_params(agent, execution)
+    
+    # 2. Construct the full prompt
     full_prompt = construct_prompt(agent, execution)
     
-    # 2. Execute agentic iteration loop
-    execute_iteration_loop(agent, full_prompt, execution)
+    # 3. Execute agentic iteration loop
+    execute_iteration_loop(agent, full_prompt, execution, execution_params)
+  end
+  
+  def prepare_execution_params(agent, execution)
+    params = {
+      model: agent.model || RubyLLM.default_model,
+      **(agent.model_params || {})
+    }
+    
+    # Store parameters for tracking
+    execution.update!(input_params: params)
+    
+    params
   end
 end
 ```
@@ -90,9 +110,9 @@ end
 
 ### Core Loop Structure
 ```ruby
-def execute_iteration_loop(agent, prompt, execution)
+def execute_iteration_loop(agent, prompt, execution, execution_params)
   iteration = 0
-  max_iterations = agent.agentable.max_iterations
+  max_iterations = agent.max_iterations
   
   current_prompt = prompt
   conversation_history = []
@@ -101,10 +121,13 @@ def execute_iteration_loop(agent, prompt, execution)
     iteration += 1
     
     # 1. Send prompt to LLM
-    llm_response = send_to_llm(agent, current_prompt)
+    llm_response = send_to_llm(agent, current_prompt, execution_params)
     conversation_history << { type: :assistant, content: llm_response }
     
-    # 2. Parse for tool calls
+    # 2. Track interaction
+    execution.increment_interaction!
+    
+    # 3. Parse for tool calls
     tool_calls = parse_tool_calls(llm_response)
     
     if tool_calls.empty?
@@ -112,14 +135,15 @@ def execute_iteration_loop(agent, prompt, execution)
       return {
         final_response: llm_response,
         conversation_history: conversation_history,
-        iterations_used: iteration
+        iterations_used: iteration,
+        interaction_count: execution.interaction_count
       }
     end
     
-    # 3. Execute tools
+    # 4. Execute tools
     tool_results = execute_tools(tool_calls, execution)
     
-    # 4. Construct next prompt with tool results
+    # 5. Construct next prompt with tool results
     current_prompt = construct_continuation_prompt(
       conversation_history,
       tool_calls,
@@ -134,6 +158,7 @@ def execute_iteration_loop(agent, prompt, execution)
     final_response: "Maximum iterations reached",
     conversation_history: conversation_history,
     iterations_used: iteration,
+    interaction_count: execution.interaction_count,
     status: :max_iterations_reached
   }
 end
@@ -276,14 +301,54 @@ class Catalyst::ExecutionJob < ApplicationJob
 end
 ```
 
+## Interaction Tracking (IMPLEMENTED)
+
+### Enhanced Execution Monitoring
+
+Each execution now includes comprehensive interaction tracking:
+
+```ruby
+# During execution, interactions are automatically tracked
+execution.increment_interaction!  # Called after each LLM response
+
+# Monitor interaction patterns
+execution.interaction_count      # => 3
+execution.last_interaction_at    # => 2024-01-15 14:30:25 UTC
+
+# Execution parameters are stored for analysis
+execution.input_params = {
+  model: "gpt-4.1-nano",
+  temperature: 0.7,
+  max_tokens: 1000
+}
+```
+
+### Query Patterns for Monitoring
+
+```ruby
+# Find executions with high interaction counts
+high_interaction_executions = Catalyst::Execution.where("interaction_count > ?", 5)
+
+# Recent interactive executions
+recent_interactive = Catalyst::Execution.where("interaction_count > 0")
+                                      .order(:last_interaction_at)
+
+# Analyze parameter usage
+parameter_analysis = Catalyst::Execution.where.not(input_params: nil)
+                                      .group("input_params->>'model'")
+                                      .count
+```
+
 ## Monitoring and Observability
 
 ### Execution Metrics
 - **Execution Duration**: `completed_at - started_at`
 - **Iteration Count**: Tracked in result metadata
+- **Interaction Count**: New field tracking LLM interactions
 - **Tool Usage**: Logged in `tool_calls` JSON field
 - **Success Rate**: Percentage of completed vs failed executions
 - **LLM Token Usage**: Tracked per execution for cost monitoring
+- **Parameter Usage**: Stored in `input_params` for analysis
 
 ### Performance Monitoring
 ```ruby

@@ -16,7 +16,7 @@ chat = RubyLLM.chat
 response = chat.ask("What's the weather?")
 
 # Model-specific chat
-chat = RubyLLM.chat(model: 'gpt-4o')
+chat = RubyLLM.chat(model: 'gpt-4.1-nano')
 
 # Conversation continuity
 chat.ask("Tell me more about that")  # Maintains context
@@ -50,9 +50,9 @@ RubyLLM abstracts provider differences behind a unified interface:
 
 ```ruby
 # Same interface, different providers
-RubyLLM.chat(model: 'gpt-4o').ask(prompt)         # OpenAI
-RubyLLM.chat(model: 'claude-3-5-sonnet').ask(prompt)  # Anthropic
-RubyLLM.chat(model: 'gemini-pro').ask(prompt)     # Google
+RubyLLM.chat(model: 'gpt-4.1-nano').ask(prompt)         # OpenAI
+RubyLLM.chat(model: 'claude-3-haiku-20240307').ask(prompt)  # Anthropic
+RubyLLM.chat(model: 'gemini-pro').ask(prompt)           # Google
 ```
 
 **Catalyst Flexibility**: Agents can switch models without code changes.
@@ -63,9 +63,27 @@ RubyLLM uses Rails-style configuration:
 
 ```ruby
 RubyLLM.configure do |config|
-  config.openai_api_key = Rails.application.credentials.openai_api_key
-  config.anthropic_api_key = Rails.application.credentials.anthropic_api_key
-  config.default_model = 'gpt-4o'
+  # Primary provider (OpenAI)
+  config.openai_api_key = ENV.fetch('OPENAI_API_KEY', nil) || 
+                          Rails.application.credentials.dig(:catalyst, :openai_api_key)
+  
+  # Default models
+  config.default_model = 'gpt-4.1-nano'
+  config.default_embedding_model = 'text-embedding-3-small'
+  
+  # Additional providers
+  config.anthropic_api_key = ENV.fetch('ANTHROPIC_API_KEY', nil) || 
+                             Rails.application.credentials.dig(:catalyst, :anthropic_api_key)
+  config.gemini_api_key = ENV.fetch('GEMINI_API_KEY', nil) || 
+                          Rails.application.credentials.dig(:catalyst, :gemini_api_key)
+  
+  # Connection settings
+  config.request_timeout = 120
+  config.max_retries = 3
+  
+  # Logging
+  config.log_file = Rails.root.join('log/ruby_llm.log')
+  config.log_level = Rails.env.development? ? :debug : :info
 end
 ```
 
@@ -191,24 +209,40 @@ rails g catalyst:install
 # Creates necessary migrations
 ```
 
-### 2. **Execution Model**
+### 2. **Execution Model (IMPLEMENTED)**
 ```ruby
 class Catalyst::Execution < ApplicationRecord
   # Chat-like tracking fields without acts_as_chat
-  # - interaction_count for counting interactions
-  # - last_interaction_at for timestamp tracking
-  # - input_params for storing agent input parameters
-  # Uses RubyLLM as service layer, not ActiveRecord integration
+  serialize :input_params, coder: JSON
+  
+  # Interaction tracking methods
+  def increment_interaction!
+    self.interaction_count = (interaction_count || 0) + 1
+    self.last_interaction_at = Time.current
+    save!
+  end
+  
+  # Query patterns
+  scope :with_interactions, -> { where('interaction_count > 0') }
+  scope :recent_interactions, -> { order(:last_interaction_at) }
 end
 ```
 
-### 3. **Configuration**
+### 3. **Configuration (IMPLEMENTED)**
 ```ruby
-# config/initializers/catalyst.rb
+# config/initializers/ruby_llm.rb
 RubyLLM.configure do |config|
-  # Provider API keys
-  # Default settings
-  # Model preferences
+  # Primary provider with credentials fallback
+  config.openai_api_key = ENV.fetch('OPENAI_API_KEY', nil) || 
+                          Rails.application.credentials.dig(:catalyst, :openai_api_key)
+  
+  # Production defaults
+  config.default_model = 'gpt-4.1-nano'
+  config.request_timeout = 120
+  config.max_retries = 3
+  
+  # Environment-specific logging
+  config.log_level = Rails.env.development? ? :debug : :info
 end
 ```
 

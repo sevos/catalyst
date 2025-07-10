@@ -16,12 +16,12 @@ class Catalyst::Agent < ApplicationRecord
   # - id (primary key)
   # - agentable_type (string, null: false) - for delegated types
   # - agentable_id (bigint, null: false) - for delegated types
-  # - max_iterations (integer, default: 1, null: false)
+  # - max_iterations (integer, default: 5, null: false)
   # - created_at, updated_at (timestamps)
   
-  # MISSING FROM CURRENT SCHEMA (to be implemented):
-  # - name (string) - agent display name
-  # - model (string) - LLM model selection (e.g., "gpt-4.1-mini")
+  # IMPLEMENTED ATTRIBUTES:
+  # - name (string, null: false) - agent display name
+  # - model (string) - LLM model selection (e.g., "gpt-4.1-nano")
   # - model_params (text) - serializable JSON containing LLM parameters
   #   Examples: {"temperature": 0.1, "max_tokens": 1000, "top_p": 0.9}
   
@@ -100,10 +100,13 @@ class Catalyst::Execution < ApplicationRecord
   # - metadata (json) - additional execution context
   # - created_at, updated_at (timestamps)
   
-  # MISSING FROM CURRENT SCHEMA (to be implemented):
+  # IMPLEMENTED ATTRIBUTES:
   # - error_message (text) - if execution failed
   # - started_at (datetime) - when execution began
   # - completed_at (datetime) - when execution finished
+  # - interaction_count (integer, default: 0) - tracks LLM interactions per execution
+  # - last_interaction_at (datetime) - timestamp of most recent interaction
+  # - input_params (text, JSON serialized) - execution-specific parameters
   
   # Note: Status enum values defined in model: pending, running, completed, failed
 end
@@ -118,10 +121,10 @@ end
 - **Basic configuration**: `max_iterations`
 - **Timestamps**: `created_at`, `updated_at`
 
-**To Be Implemented:**
-- **Common identification**: `name`
+**Currently Implemented:**
+- **Common identification**: `name` (required)
 - **LLM configuration**: `model`, `model_params` (serializable JSON)
-- **Enhanced max_iterations**: Increase default from 1 to appropriate value
+- **Enhanced max_iterations**: Default value of 5 for multi-step reasoning
 
 **Rationale**: These attributes are common to ALL agent types and form the foundation of agent behavior.
 
@@ -166,7 +169,7 @@ end
 create_table :catalyst_agents do |t|
   t.string :agentable_type, null: false
   t.bigint :agentable_id, null: false
-  t.integer :max_iterations, default: 1, null: false
+  t.integer :max_iterations, default: 5, null: false
   t.timestamps
   
   t.index [:agentable_type, :agentable_id], unique: true, name: "index_catalyst_agents_on_agentable"
@@ -189,9 +192,9 @@ create_table :catalyst_executions do |t|
 end
 ```
 
-### Target Schema (To Be Implemented)
+### Current Schema (Fully Implemented)
 ```ruby
-# Enhanced schema for complete functionality
+# Current production schema with all features implemented
 create_table :catalyst_agents do |t|
   t.string :name, null: false
   t.string :agentable_type, null: false
@@ -212,9 +215,65 @@ create_table :catalyst_executions do |t|
   t.text :error_message
   t.datetime :started_at
   t.datetime :completed_at
+  t.integer :interaction_count, default: 0, null: false
+  t.datetime :last_interaction_at
+  t.text :input_params  # Serializable JSON for execution parameters
   t.json :metadata
   t.timestamps
 end
+```
+
+## Enhanced Features
+
+### Nested Attributes Pattern (IMPLEMENTED)
+
+The Agentable pattern supports nested attributes for streamlined agent creation:
+
+```ruby
+# Create agent with nested catalyst_agent configuration
+application_agent = ApplicationAgent.create!(
+  role: "Marketing Assistant",
+  goal: "Create compelling marketing content",
+  backstory: "Expert in brand marketing and copywriting",
+  agent_attributes: {
+    name: "Marketing Agent",
+    max_iterations: 10,
+    model: "gpt-4.1-nano",
+    model_params: { "temperature" => 0.7, "max_tokens" => 1000 }
+  }
+)
+
+# Alternative syntax using catalyst_agent_attributes
+application_agent = ApplicationAgent.create!(
+  role: "Data Analyst",
+  goal: "Analyze business data",
+  backstory: "Expert in data science",
+  catalyst_agent_attributes: {
+    name: "Data Agent",
+    max_iterations: 15
+  }
+)
+```
+
+### Interaction Tracking (IMPLEMENTED)
+
+Each execution tracks interaction patterns for monitoring and debugging:
+
+```ruby
+# Track interactions during execution
+execution.increment_interaction!
+
+# Store execution-specific parameters
+execution.update!(input_params: {
+  model: "gpt-4.1-nano",
+  temperature: 0.7,
+  max_tokens: 1000
+})
+
+# Monitor interaction patterns
+execution.interaction_count      # => 3
+execution.last_interaction_at    # => 2024-01-15 14:30:25 UTC
+execution.input_params          # => {"model" => "gpt-4.1-nano", "temperature" => 0.7}
 ```
 
 ## Query Patterns
@@ -236,4 +295,7 @@ agent.executions.order(created_at: :desc).limit(10)
 
 # Failed executions for debugging
 Catalyst::Execution.where(status: :failed).includes(:agent)
+
+# Monitor interaction patterns
+Catalyst::Execution.where("interaction_count > ?", 5).order(:last_interaction_at)
 ```
