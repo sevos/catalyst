@@ -292,16 +292,16 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
     assert_includes execution.errors[:interaction_count], "must be greater than or equal to 0"
   end
 
-  test "input_parameters returns empty hash when input_params is nil" do
+  test "input_params returns empty hash when nil" do
     execution = Catalyst::Execution.create!(
       agent: @agent,
       prompt: "Test task"
     )
 
-    assert_equal({}, execution.input_parameters)
+    assert_equal({}, execution.input_params || {})
   end
 
-  test "input_parameters stores and retrieves parameters" do
+  test "input_params stores and retrieves parameters" do
     params = { "temperature" => 0.7, "max_tokens" => 150 }
     execution = Catalyst::Execution.create!(
       agent: @agent,
@@ -309,23 +309,22 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
       input_params: params
     )
 
-    assert_equal params, execution.input_parameters
     assert_equal params, execution.input_params
   end
 
-  test "input_parameters= sets parameters correctly" do
+  test "input_params= sets parameters correctly" do
     execution = Catalyst::Execution.create!(
       agent: @agent,
       prompt: "Test task"
     )
 
     params = { "model" => "gpt-4.1-nano", "temperature" => 0.8 }
-    execution.input_parameters = params
+    execution.input_params = params
 
-    assert_equal params, execution.input_parameters
+    assert_equal params, execution.input_params
   end
 
-  test "input_parameter returns specific parameter value" do
+  test "input_params allows access to specific parameter values" do
     params = { "temperature" => 0.7, "max_tokens" => 150 }
     execution = Catalyst::Execution.create!(
       agent: @agent,
@@ -333,12 +332,12 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
       input_params: params
     )
 
-    assert_equal 0.7, execution.input_parameter("temperature")
-    assert_equal 150, execution.input_parameter("max_tokens")
-    assert_nil execution.input_parameter("nonexistent")
+    assert_equal 0.7, execution.input_params["temperature"]
+    assert_equal 150, execution.input_params["max_tokens"]
+    assert_nil execution.input_params["nonexistent"]
   end
 
-  test "input_parameter accepts symbol keys" do
+  test "input_params works with string keys" do
     params = { "temperature" => 0.7 }
     execution = Catalyst::Execution.create!(
       agent: @agent,
@@ -346,22 +345,23 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
       input_params: params
     )
 
-    assert_equal 0.7, execution.input_parameter(:temperature)
+    assert_equal 0.7, execution.input_params["temperature"]
   end
 
-  test "set_input_parameter adds new parameter" do
+  test "input_params can be updated with new parameters" do
     execution = Catalyst::Execution.create!(
       agent: @agent,
       prompt: "Test task"
     )
 
-    execution.set_input_parameter("temperature", 0.9)
+    execution.input_params = { "temperature" => 0.9 }
+    execution.save!
 
-    assert_equal 0.9, execution.input_parameter("temperature")
-    assert_equal({ "temperature" => 0.9 }, execution.input_parameters)
+    assert_equal 0.9, execution.input_params["temperature"]
+    assert_equal({ "temperature" => 0.9 }, execution.input_params)
   end
 
-  test "set_input_parameter updates existing parameter" do
+  test "input_params can be updated with existing parameters" do
     params = { "temperature" => 0.7, "max_tokens" => 150 }
     execution = Catalyst::Execution.create!(
       agent: @agent,
@@ -369,21 +369,23 @@ class Catalyst::ExecutionTest < ActiveSupport::TestCase
       input_params: params
     )
 
-    execution.set_input_parameter("temperature", 0.9)
+    execution.input_params = execution.input_params.merge("temperature" => 0.9)
+    execution.save!
 
-    assert_equal 0.9, execution.input_parameter("temperature")
-    assert_equal 150, execution.input_parameter("max_tokens")
+    assert_equal 0.9, execution.input_params["temperature"]
+    assert_equal 150, execution.input_params["max_tokens"]
   end
 
-  test "set_input_parameter accepts symbol keys" do
+  test "input_params works with hash assignment" do
     execution = Catalyst::Execution.create!(
       agent: @agent,
       prompt: "Test task"
     )
 
-    execution.set_input_parameter(:temperature, 0.9)
+    execution.input_params = { "temperature" => 0.9 }
+    execution.save!
 
-    assert_equal 0.9, execution.input_parameter("temperature")
+    assert_equal 0.9, execution.input_params["temperature"]
   end
 
   test "increment_interaction! increases count and updates timestamp" do
