@@ -77,8 +77,8 @@ The Catalyst Framework addresses a critical gap in the Ruby on Rails ecosystem. 
   * Create a Rails generator (rails g catalyst:agent) for Agent classes and ERB prompt templates.  
 * **Story 1.2.1: RubyLLM Integration** ✅ **DONE**  
   * Integrate RubyLLM as the LLM provider layer with comprehensive configuration and execution tracking.  
-* **Story 1.3: Default LLM Adapter & Basic Execution** ⏳ **DRAFT**  
-  * Implement a default, configurable LLM adapter (e.g., for OpenAI) to execute a basic prompt.  
+* **Story 1.3: Single Agent Execution API** ⏳ **DRAFT**  
+  * Implement single agent execution capability that processes agent configuration, input parameters, and user messages to generate system prompts and execute single LLM requests via RubyLLM integration.  
 * **Story 1.4: Agentic Iteration Loop & Limits** ⏳ **DRAFT**  
   * Implement a max\_iterations limit for an Agent to control its reasoning loop.  
 * **Story 1.5: Asynchronous Execution via ActiveJob** ⏳ **DRAFT**  

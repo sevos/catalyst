@@ -33,8 +33,8 @@ Build a Rails generator that creates agent classes and prompt templates, enablin
 ### 1.2.1: RubyLLM Integration ✅ **COMPLETED**
 Integrate RubyLLM as the LLM provider layer, adding the dependency, configuration initializer, and ActiveRecord integration to enable unified access to multiple AI providers.
 
-### 1.3: Default LLM Adapter & Basic Execution
-Implement a configurable LLM adapter (OpenAI) that can execute agent prompts and store results, providing the core execution capability.
+### 1.3: Single Agent Execution API
+Implement single agent execution capability that processes agent configuration, input parameters, and user messages to generate system prompts and execute single LLM requests via RubyLLM integration.
 
 ### 1.4: Agentic Iteration Loop & Limits
 Add max_iterations configuration to control agent reasoning loops, preventing runaway executions and providing cost control.
@@ -46,7 +46,7 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 - Rails application environment
 - ActiveRecord for data persistence
 - ActiveJob for background processing
-- OpenAI API access for LLM integration
+- RubyLLM integration for LLM provider access
 
 ## Success Criteria
 - [x] Developer can install the framework with `rails g catalyst:install`
@@ -86,12 +86,12 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
   - ✅ Story 1.2: Agent Generation **COMPLETED**
   - ✅ Story 1.2.1: RubyLLM Integration **COMPLETED**
 - Stories 1.3-1.5: Execution & Enhanced Capabilities (Sprint 1-2)
-  - ⏳ Story 1.3: Core LLM Execution - **NEXT UP**
+  - ⏳ Story 1.3: Single Agent Execution API - **NEXT UP**
   - ⏳ Stories 1.4-1.5: Advanced Features (Sprint 2)
 
 ## Risks & Mitigation
-- **Risk:** OpenAI API reliability
-  - **Mitigation:** Implement proper error handling and retry logic
+- **Risk:** LLM provider API reliability
+  - **Mitigation:** Leverage RubyLLM's built-in error handling and retry logic
 - **Risk:** ActiveJob configuration complexity
   - **Mitigation:** Provide clear documentation and sensible defaults
 - **Risk:** Performance impact of synchronous execution
