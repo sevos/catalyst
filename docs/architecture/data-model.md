@@ -8,44 +8,93 @@ The Catalyst Framework uses a **Delegated Types** approach to provide both simpl
 
 ### Catalyst::Agent (Base Model)
 ```ruby
-# Core attributes common to all agents
+# Core attributes common to all agents (FULLY IMPLEMENTED)
 class Catalyst::Agent < ApplicationRecord
   delegated_type :agentable, types: %w[ApplicationAgent MarketingAgent CustomAgent]
   
-  # Core shared attributes (CURRENT IMPLEMENTATION)
+  # Core shared attributes (IMPLEMENTED)
   # - id (primary key)
+  # - name (string, null: false) - agent display name
   # - agentable_type (string, null: false) - for delegated types
   # - agentable_id (bigint, null: false) - for delegated types
-  # - max_iterations (integer, default: 5, null: false)
-  # - created_at, updated_at (timestamps)
-  
-  # IMPLEMENTED ATTRIBUTES:
-  # - name (string, null: false) - agent display name
   # - model (string) - LLM model selection (e.g., "gpt-4.1-nano")
   # - model_params (text) - serializable JSON containing LLM parameters
   #   Examples: {"temperature": 0.1, "max_tokens": 1000, "top_p": 0.9}
+  # - max_iterations (integer, default: 5, null: false)
+  # - created_at, updated_at (timestamps)
+  
+  # Constants
+  DEFAULT_MODEL = "gpt-4.1-nano"
+  TEMPLATE_DIRECTORY = "app/ai/prompts"
+  
+  # JSON serialization for SQLite compatibility
+  serialize :model_params, coder: JSON
+  
+  # Validations
+  validates :name, presence: true
+  validates :max_iterations, presence: true, numericality: { greater_than: 0 }
+  
+  # Associations
+  belongs_to :agentable, polymorphic: true
+  has_many :executions, class_name: "Catalyst::Execution", foreign_key: "agent_id", dependent: :destroy
+  
+  # Core execution method (IMPLEMENTED)
+  def execute(user_message)
+    # 1. Input validation
+    validate_user_message!(user_message)
+    
+    # 2. Create execution record
+    execution = create_execution_record(user_message)
+    
+    begin
+      # 3. Update status to running
+      execution.start!
+      
+      # 4. Build system prompt from ERB template
+      system_prompt = build_system_prompt
+      
+      # 5. Send to LLM via RubyLLM
+      llm_response = send_to_llm(system_prompt, user_message)
+      
+      # 6. Complete execution with results
+      execution.complete!(llm_response)
+      execution.increment_interaction!
+      
+      # 7. Return response
+      llm_response
+    rescue => error
+      # 8. Handle errors safely
+      handle_execution_error(execution, error)
+      raise
+    end
+  end
   
   # Note: Agent prompts are defined in *.md.erb template files, not stored in database
+  # Private implementation methods are documented in execution-flow.md
 end
 ```
 
 ### Catalyst::Agentable Module
 ```ruby
-# Module that provides delegated type behavior for agent types
+# Module that provides delegated type behavior for agent types (IMPLEMENTED)
 module Catalyst::Agentable
   extend ActiveSupport::Concern
   
   included do
     # Provides the reverse relationship for delegated types
-    has_one :agent, as: :agentable, class_name: "Catalyst::Agent", dependent: :destroy
+    has_one :catalyst_agent, as: :agentable, class_name: "Catalyst::Agent", dependent: :destroy
     
-    # Common agent behavior
-    def execute(prompt, context: {})
-      agent.execute(prompt, context: context)
+    # Nested attributes support for streamlined agent creation
+    accepts_nested_attributes_for :catalyst_agent, allow_destroy: true
+    alias_attribute :agent_attributes, :catalyst_agent_attributes
+    
+    # Common agent behavior - delegates to catalyst_agent
+    def execute(user_message)
+      catalyst_agent.execute(user_message)
     end
     
     def recent_executions(limit = 10)
-      agent.executions.order(created_at: :desc).limit(limit)
+      catalyst_agent.executions.order(created_at: :desc).limit(limit)
     end
   end
 end
@@ -53,16 +102,32 @@ end
 
 ### ApplicationAgent (Entry Point)
 ```ruby
-# Simple agent type for getting started
+# Simple agent type for getting started (IMPLEMENTED)
 class ApplicationAgent < ApplicationRecord
   include Catalyst::Agentable
   
-  # Basic agent configuration attributes (CURRENT IMPLEMENTATION)
+  # Basic agent configuration attributes (IMPLEMENTED)
   # - id (primary key)
   # - role (string) - What the agent is (e.g., "Marketing Assistant", "Data Analyst")
   # - goal (text) - What the agent is trying to accomplish
   # - backstory (text) - Agent's background and expertise context
   # - created_at, updated_at (timestamps)
+  
+  validates :role, presence: true
+  validates :goal, presence: true
+  validates :backstory, presence: true
+  
+  # Example usage with nested attributes
+  # ApplicationAgent.create!(
+  #   role: "Marketing Assistant",
+  #   goal: "Create compelling marketing content",
+  #   backstory: "Expert in brand marketing",
+  #   agent_attributes: {
+  #     name: "Marketing Agent",
+  #     model: "gpt-4.1-nano",
+  #     model_params: { "temperature" => 0.7 }
+  #   }
+  # )
   
   # Note: LLM configuration (model, model_params, etc.) is handled by base Catalyst::Agent
   # Agent prompts are constructed from role/backstory/goal using *.md.erb templates

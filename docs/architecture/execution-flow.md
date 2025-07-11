@@ -2,370 +2,307 @@
 
 ## Overview
 
-The Catalyst Framework's execution flow is designed around **asynchronous processing** using Rails' ActiveJob system. This ensures the host application remains responsive while agents perform complex, time-consuming tasks.
+The Catalyst Framework's execution flow is designed around **synchronous processing** for immediate agent responses. This provides simple, predictable behavior for single agent execution with direct LLM integration via RubyLLM.
 
 ## Execution Phases
 
-### 1. Agent Invocation
+### 1. Agent Creation
 ```ruby
-# From host application
-agent = MyAgent.create(
-  application_agent_attributes: {
-    role: "Marketing Assistant",
-    goal: "Create compelling marketing content",
-    backstory: "Expert in brand marketing"
-  },
+# From host application - create agent with nested attributes
+agent = ApplicationAgent.create!(
+  role: "Marketing Assistant",
+  goal: "Create compelling marketing content",
+  backstory: "Expert in brand marketing",
   agent_attributes: {
     name: "Marketing Agent",
     model: "gpt-4.1-nano",
     model_params: { "temperature" => 0.7 }
   }
 )
-
-# Trigger execution
-execution = agent.execute(
-  prompt: "Create a marketing campaign for our new product",
-  context: { product_id: 123, user_id: current_user.id }
-)
 ```
 
-### 2. Job Enqueueing
+### 2. Direct Execution
 ```ruby
-# Catalyst::Agent#execute method
-def execute(prompt:, context: {})
-  execution = executions.create!(
-    prompt: prompt,
-    status: :pending,
-    metadata: { context: context }
-  )
-  
-  # Enqueue background job
-  Catalyst::ExecutionJob.perform_later(execution.id)
-  
-  execution
-end
+# Synchronous execution with immediate response
+response = agent.execute("Create a marketing campaign for our new product")
+# => "Here's a comprehensive marketing campaign for your product..."
+
+# Alternative syntax using delegated types
+response = agent.catalyst_agent.execute("Create a marketing campaign for our new product")
 ```
 
-### 3. Background Execution
+### 3. Execution Flow Implementation
 ```ruby
-# Catalyst::ExecutionJob
-class Catalyst::ExecutionJob < ApplicationJob
-  queue_as :catalyst_agents
+# Catalyst::Agent#execute method (actual implementation)
+def execute(user_message)
+  # 1. Input validation
+  validate_user_message!(user_message)
   
-  def perform(execution_id)
-    execution = Catalyst::Execution.find(execution_id)
-    
-    # Update status
-    execution.update!(status: :running, started_at: Time.current)
-    
-    # Execute agent logic
-    result = execute_agent_logic(execution)
-    
-    # Update with results
-    execution.update!(
-      status: :completed,
-      result: result,
-      completed_at: Time.current
-    )
-    
-  rescue => error
-    execution.update!(
-      status: :failed,
-      error_message: error.message,
-      completed_at: Time.current
-    )
-    raise
-  end
+  # 2. Create execution record
+  execution = create_execution_record(user_message)
   
-  private
-  
-  def execute_agent_logic(execution)
-    agent = execution.agent
+  begin
+    # 3. Update status to running
+    execution.start!
     
-    # 1. Prepare execution parameters
-    execution_params = prepare_execution_params(agent, execution)
+    # 4. Build system prompt from ERB template
+    system_prompt = build_system_prompt
     
-    # 2. Construct the full prompt
-    full_prompt = construct_prompt(agent, execution)
+    # 5. Send to LLM via RubyLLM
+    llm_response = send_to_llm(system_prompt, user_message)
     
-    # 3. Execute agentic iteration loop
-    execute_iteration_loop(agent, full_prompt, execution, execution_params)
-  end
-  
-  def prepare_execution_params(agent, execution)
-    params = {
-      model: agent.model || RubyLLM.default_model,
-      **(agent.model_params || {})
-    }
-    
-    # Store parameters for tracking
-    execution.update!(input_params: params)
-    
-    params
-  end
-end
-```
-
-## Agentic Iteration Loop
-
-### Core Loop Structure
-```ruby
-def execute_iteration_loop(agent, prompt, execution, execution_params)
-  iteration = 0
-  max_iterations = agent.max_iterations
-  
-  current_prompt = prompt
-  conversation_history = []
-  
-  while iteration < max_iterations
-    iteration += 1
-    
-    # 1. Send prompt to LLM
-    llm_response = send_to_llm(agent, current_prompt, execution_params)
-    conversation_history << { type: :assistant, content: llm_response }
-    
-    # 2. Track interaction
+    # 6. Complete execution with results
+    execution.complete!(llm_response)
     execution.increment_interaction!
     
-    # 3. Parse for tool calls
-    tool_calls = parse_tool_calls(llm_response)
-    
-    if tool_calls.empty?
-      # No tools needed, we're done
-      return {
-        final_response: llm_response,
-        conversation_history: conversation_history,
-        iterations_used: iteration,
-        interaction_count: execution.interaction_count
-      }
-    end
-    
-    # 4. Execute tools
-    tool_results = execute_tools(tool_calls, execution)
-    
-    # 5. Construct next prompt with tool results
-    current_prompt = construct_continuation_prompt(
-      conversation_history,
-      tool_calls,
-      tool_results
-    )
-    
-    conversation_history << { type: :tool_results, content: tool_results }
+    # 7. Return response
+    llm_response
+  rescue => error
+    # 8. Handle errors safely
+    handle_execution_error(execution, error)
+    raise
+  end
+end
+
+private
+
+def create_execution_record(user_message)
+  executions.create!(
+    prompt: user_message.strip,
+    input_params: capture_agent_attributes,
+    interaction_count: 0
+  )
+end
+
+def capture_agent_attributes
+  # Merge both Catalyst::Agent and agentable attributes
+  agent_attrs = attributes.except("id", "created_at", "updated_at")
+  agentable_attrs = agentable.attributes.except("id", "created_at", "updated_at")
+  agent_attrs.merge(agentable_attrs)
+end
+```
+
+## Template System Implementation
+
+### ERB Template Resolution
+```ruby
+# Template resolution with inheritance chain support
+def build_system_prompt
+  template_content = load_prompt_template
+  ERB.new(template_content).result(binding_with_agent)
+end
+
+def load_prompt_template
+  template_path = resolve_template_path
+  File.read(template_path)
+rescue Errno::ENOENT => e
+  raise TemplateNotFoundError, "Template file not found: #{template_path}"
+end
+
+def resolve_template_path
+  template_paths = build_template_inheritance_chain
+  
+  template_paths.each do |path|
+    return path if File.exist?(path)
   end
   
-  # Max iterations reached
-  {
-    final_response: "Maximum iterations reached",
-    conversation_history: conversation_history,
-    iterations_used: iteration,
-    interaction_count: execution.interaction_count,
-    status: :max_iterations_reached
-  }
+  raise TemplateNotFoundError, "No template found for #{agentable.class.name}. Checked: #{template_paths.join(', ')}"
+end
+
+def build_template_inheritance_chain
+  paths = []
+  klass = agentable.class
+  
+  # Walk up the inheritance chain until we hit ApplicationRecord
+  while klass && klass != ApplicationRecord
+    template_name = klass.name.underscore
+    paths << Rails.root.join("app/ai/prompts", "#{template_name}.md.erb").to_s
+    klass = klass.superclass
+  end
+  
+  paths
+end
+
+def binding_with_agent
+  @agent = agentable  # Make agentable available as @agent in templates
+  binding
 end
 ```
 
 ## LLM Integration
 
-### Adapter Pattern Implementation
+### RubyLLM Implementation
 ```ruby
-# Base adapter interface
-class Catalyst::LlmAdapters::Base
-  def initialize(config)
-    @config = config
-  end
-  
-  def call(prompt:, model:, temperature: 0.7, max_tokens: 1000)
-    raise NotImplementedError
-  end
-end
-
-# OpenAI adapter
-class Catalyst::LlmAdapters::OpenaiAdapter < Base
-  def call(prompt:, model:, temperature: 0.7, max_tokens: 1000)
-    client = OpenAI::Client.new(access_token: @config[:api_key])
-    
-    response = client.chat(
-      parameters: {
-        model: model,
-        messages: [{ role: "user", content: prompt }],
-        temperature: temperature,
-        max_tokens: max_tokens
-      }
-    )
-    
-    response.dig("choices", 0, "message", "content")
-  end
-end
-```
-
-## Tool Execution System
-
-### Tool Discovery and Execution
-```ruby
-def execute_tools(tool_calls, execution)
-  results = []
-  
-  tool_calls.each do |tool_call|
-    tool_class = resolve_tool_class(tool_call[:name])
-    
-    if tool_class.nil?
-      results << {
-        tool: tool_call[:name],
-        success: false,
-        error: "Tool not found: #{tool_call[:name]}"
-      }
-      next
-    end
-    
-    begin
-      # Execute tool with context
-      tool_instance = tool_class.new(
-        execution_context: execution.metadata["context"]
-      )
-      
-      result = tool_instance.call(tool_call[:arguments])
-      
-      results << {
-        tool: tool_call[:name],
-        success: true,
-        result: result
-      }
-      
-    rescue => error
-      results << {
-        tool: tool_call[:name],
-        success: false,
-        error: error.message
-      }
-    end
-  end
-  
-  # Log tool usage
-  execution.update!(
-    tool_calls: (execution.tool_calls || []) + tool_calls.zip(results).map do |call, result|
-      {
-        name: call[:name],
-        arguments: call[:arguments],
-        result: result,
-        executed_at: Time.current
-      }
-    end
+# Direct RubyLLM integration (actual implementation)
+def send_to_llm(system_prompt, user_message)
+  chat = RubyLLM.chat(
+    model: model || DEFAULT_MODEL,
+    **formatted_model_params
   )
   
-  results
+  chat.system(system_prompt)
+  response = chat.ask(user_message)
+  
+  response.to_s
+end
+
+def formatted_model_params
+  return {} unless model_params
+  
+  # Convert string keys to symbols for RubyLLM
+  model_params.transform_keys(&:to_sym)
+end
+
+# Example usage with different models and parameters
+agent = ApplicationAgent.create!(
+  role: "Assistant",
+  goal: "Help users",
+  backstory: "Helpful AI assistant",
+  agent_attributes: {
+    name: "Test Agent",
+    model: "gpt-4.1-mini",
+    model_params: { "temperature" => 0.7, "max_tokens" => 500 }
+  }
+)
+
+response = agent.execute("Hello, how can you help me?")
+# => LLM response processed through RubyLLM
+```
+
+## Error Handling and Security
+
+### Input Validation
+```ruby
+def validate_user_message!(user_message)
+  raise ArgumentError, "User message cannot be blank" if user_message.blank?
+  raise ArgumentError, "User message must be a string" unless user_message.is_a?(String)
+  raise ArgumentError, "User message too long (maximum 10,000 characters)" if user_message.length > 10_000
 end
 ```
 
-## Error Handling and Recovery
-
-### Execution Error Handling
+### Secure Error Handling
 ```ruby
-class Catalyst::ExecutionJob < ApplicationJob
-  retry_on StandardError, wait: :exponentially_longer, attempts: 3
+def handle_execution_error(execution, error)
+  # Safely handle errors without risking validation failures
+  sanitized_message = sanitize_error_message(error.message)
+  execution.update_columns(
+    status: "failed",
+    error_message: sanitized_message,
+    completed_at: Time.current
+  )
+end
+
+def sanitize_error_message(message)
+  # Remove potentially sensitive information from error messages
+  message.to_s.gsub(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/, "[EMAIL]")
+             .gsub(/\b(?:\d{1,3}\.){3}\d{1,3}\b/, "[IP]")
+             .gsub(/\b[A-Za-z0-9]{20,}\b/, "[TOKEN]")
+             .truncate(500)
+end
+```
+
+## Execution Status Management
+
+### Status Transitions
+```ruby
+# Execution model with enum status
+class Catalyst::Execution < ApplicationRecord
+  enum :status, {
+    pending: "pending",
+    running: "running", 
+    completed: "completed",
+    failed: "failed"
+  }, default: :pending
   
-  discard_on Catalyst::SecurityError
-  discard_on Catalyst::InvalidToolError
+  # Helper methods for status transitions
+  def start!
+    update!(status: :running, started_at: Time.current)
+  end
   
-  def perform(execution_id)
-    execution = Catalyst::Execution.find(execution_id)
-    
-    begin
-      # Main execution logic
-      result = execute_agent_logic(execution)
-      
-      execution.update!(
-        status: :completed,
-        result: result,
-        completed_at: Time.current
-      )
-      
-    rescue Catalyst::RetryableError => error
-      # Let ActiveJob handle retries
-      execution.update!(error_message: error.message)
-      raise
-      
-    rescue => error
-      # Non-retryable errors
-      execution.update!(
-        status: :failed,
-        error_message: error.message,
-        completed_at: Time.current
-      )
-      
-      # Optional: Notify monitoring systems
-      notify_error_tracking(error, execution)
-      
-      raise
-    end
+  def complete!(result = nil)
+    update!(status: :completed, completed_at: Time.current, result: result)
+  end
+  
+  def fail!(error_message = nil)
+    update!(status: :failed, completed_at: Time.current, error_message: error_message)
+  end
+  
+  # Interaction tracking
+  def increment_interaction!
+    self.interaction_count = (interaction_count || 0) + 1
+    self.last_interaction_at = Time.current
+    save!
   end
 end
-```
-
-## Interaction Tracking (IMPLEMENTED)
-
-### Enhanced Execution Monitoring
-
-Each execution now includes comprehensive interaction tracking:
-
-```ruby
-# During execution, interactions are automatically tracked
-execution.increment_interaction!  # Called after each LLM response
-
-# Monitor interaction patterns
-execution.interaction_count      # => 3
-execution.last_interaction_at    # => 2024-01-15 14:30:25 UTC
-
-# Execution parameters are stored for analysis
-execution.input_params = {
-  model: "gpt-4.1-nano",
-  temperature: 0.7,
-  max_tokens: 1000
-}
-```
-
-### Query Patterns for Monitoring
-
-```ruby
-# Find executions with high interaction counts
-high_interaction_executions = Catalyst::Execution.where("interaction_count > ?", 5)
-
-# Recent interactive executions
-recent_interactive = Catalyst::Execution.where("interaction_count > 0")
-                                      .order(:last_interaction_at)
-
-# Analyze parameter usage
-parameter_analysis = Catalyst::Execution.where.not(input_params: nil)
-                                      .group("input_params->>'model'")
-                                      .count
 ```
 
 ## Monitoring and Observability
 
-### Execution Metrics
-- **Execution Duration**: `completed_at - started_at`
-- **Iteration Count**: Tracked in result metadata
-- **Interaction Count**: New field tracking LLM interactions
-- **Tool Usage**: Logged in `tool_calls` JSON field
-- **Success Rate**: Percentage of completed vs failed executions
-- **LLM Token Usage**: Tracked per execution for cost monitoring
-- **Parameter Usage**: Stored in `input_params` for analysis
+### Execution Tracking
+Each execution captures comprehensive data for monitoring:
 
-### Performance Monitoring
 ```ruby
-# Example monitoring hook
+# Execution attributes tracked
+execution = agent.execute("Hello, how can you help me?")
+
+# Access execution details
+last_execution = agent.executions.last
+last_execution.status              # => "completed"
+last_execution.interaction_count   # => 1
+last_execution.input_params        # => {"name" => "Test Agent", "model" => "gpt-4.1-nano", ...}
+last_execution.prompt              # => "Hello, how can you help me?"
+last_execution.result              # => "I'm here to help with..."
+last_execution.duration            # => 2.5 seconds
+```
+
+### Query Patterns for Monitoring
+```ruby
+# Find recent executions
+recent_executions = Catalyst::Execution.order(created_at: :desc).limit(10)
+
+# Monitor success rates
+success_rate = Catalyst::Execution.where(status: :completed).count / 
+               Catalyst::Execution.count.to_f * 100
+
+# Find failed executions for debugging
+failed_executions = Catalyst::Execution.where(status: :failed)
+                                      .includes(:agent)
+                                      .order(created_at: :desc)
+
+# Analyze model usage
+model_usage = Catalyst::Execution.joins(:agent)
+                                .group("catalyst_agents.model")
+                                .count
+
+# Monitor execution performance
+slow_executions = Catalyst::Execution.where("completed_at - started_at > ?", 5.seconds)
+```
+
+### Key Metrics Tracked
+- **Execution Duration**: `completed_at - started_at`
+- **Interaction Count**: Number of LLM interactions per execution
+- **Success Rate**: Percentage of completed vs failed executions
+- **Input Parameters**: Complete agent configuration captured per execution
+- **Error Patterns**: Sanitized error messages for debugging
+- **Model Usage**: Which models are being used most frequently
+
+### Example Monitoring Implementation
+```ruby
+# Track execution metrics
 module Catalyst
   module Monitoring
     def self.track_execution(execution)
-      duration = execution.completed_at - execution.started_at
+      return unless execution.finished?
       
-      # Custom metrics
+      duration = execution.duration
+      
+      # Custom metrics (using your preferred metrics library)
       StatsD.timing("catalyst.execution.duration", duration)
       StatsD.increment("catalyst.execution.#{execution.status}")
       
-      # Tool usage metrics
-      execution.tool_calls&.each do |tool_call|
-        StatsD.increment("catalyst.tool.#{tool_call['name']}.usage")
-      end
+      # Model usage tracking
+      model = execution.input_params["model"] || "default"
+      StatsD.increment("catalyst.model.#{model}.usage")
     end
   end
 end
