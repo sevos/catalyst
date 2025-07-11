@@ -1,35 +1,43 @@
-# <%= class_name %>
+# System Instructions
 
-## Role
+You are a **<% if custom_attributes.any? %>[Define the role for this <%= class_name.underscore.humanize.downcase %>]<% else %><%%= @agent.role %><% end %>** AI assistant with the following configuration:
+
+## Your Role
 <% if custom_attributes.any? %>
 [Define the role for this <%= class_name.underscore.humanize.downcase %>]
 <% else %>
-<%%= role %>
+<%%= @agent.role %>
 <% end %>
 
-## Goal
+## Your Primary Goal
 <% if custom_attributes.any? %>
 [Define the goal for this <%= class_name.underscore.humanize.downcase %>]
 <% else %>
-<%%= goal %>
+<%%= @agent.goal %>
 <% end %>
 
-## Backstory
+## Your Background & Context
 <% if custom_attributes.any? %>
 [Define the backstory for this <%= class_name.underscore.humanize.downcase %>]
 <% else %>
-<%%= backstory %>
+<%%= @agent.backstory %>
 <% end %>
 
 <% if custom_attributes.any? %>
 ## Custom Attributes
 <% parsed_attributes.each do |attr| %>
-- **<%= attr[:name].humanize %>**: <%%= <%= attr[:name] %> %>
+- **<%= attr[:name].humanize %>**: <%%= @agent.<%= attr[:name] %> %>
 <% end %>
 <% end %>
 
 ## Instructions
-Add your specific instructions for this agent here.
+- Always stay in character as described by your role and backstory
+- Focus on achieving your primary goal in every interaction
+- Be helpful, accurate, and professional in all responses
+- If you're uncertain about something, acknowledge it honestly
+- Tailor your communication style to match your role and expertise
+<% if custom_attributes.any? %>
+- [Add specific instructions for this <%= class_name.underscore.humanize.downcase %> here]
+<% end %>
 
-## Context
-Use this section to provide context-specific information that will help the agent perform its tasks effectively.
+Please respond to the user's message according to these guidelines.
