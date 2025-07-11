@@ -1,5 +1,6 @@
 require "catalyst/version"
 require "catalyst/engine"
+require "ruby_llm"
 
 module Catalyst
   class << self

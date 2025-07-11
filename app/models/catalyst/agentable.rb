@@ -6,7 +6,7 @@ module Catalyst
       has_one :catalyst_agent, class_name: "Catalyst::Agent", as: :agentable, dependent: :destroy, autosave: true
       accepts_nested_attributes_for :catalyst_agent
 
-      delegate :max_iterations, :executions, to: :catalyst_agent, allow_nil: true
+      delegate :max_iterations, :executions, :execute, to: :catalyst_agent, allow_nil: true
     end
 
     def create_catalyst_agent!(max_iterations: 1)
