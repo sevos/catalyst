@@ -327,9 +327,12 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
 
   test "execute method creates execution record and returns LLM response" do
     # Set up a mock response for testing
+    mock_response = Object.new
+    mock_response.define_singleton_method(:content) { "Hello! I'm ready to help you with your tasks." }
+    
     mock_chat = Minitest::Mock.new
-    mock_chat.expect :system, nil, [ String ]
-    mock_chat.expect :ask, "Hello! I'm ready to help you with your tasks.", [ String ]
+    mock_chat.expect :with_instructions, mock_chat, [ String ]
+    mock_chat.expect :ask, mock_response, [ String ]
 
     application_agent = ApplicationAgent.create!(
       role: "Assistant",
@@ -358,9 +361,12 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
   end
 
   test "execute method captures all agent attributes in input_params" do
+    mock_response = Object.new
+    mock_response.define_singleton_method(:content) { "Response" }
+    
     mock_chat = Object.new
-    mock_chat.define_singleton_method(:system) { |_| }
-    mock_chat.define_singleton_method(:ask) { |_| "Response" }
+    mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
+    mock_chat.define_singleton_method(:ask) { |_| mock_response }
 
     RubyLLM.stub :chat, mock_chat do
       application_agent = ApplicationAgent.create!(
@@ -395,9 +401,12 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
   end
 
   test "execute method tracks execution status transitions" do
+    mock_response = Object.new
+    mock_response.define_singleton_method(:content) { "Task completed" }
+    
     mock_chat = Object.new
-    mock_chat.define_singleton_method(:system) { |_| }
-    mock_chat.define_singleton_method(:ask) { |_| "Task completed" }
+    mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
+    mock_chat.define_singleton_method(:ask) { |_| mock_response }
 
     RubyLLM.stub :chat, mock_chat do
       application_agent = ApplicationAgent.create!(
@@ -452,9 +461,12 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
   test "execute method constructs system prompt using ERB template" do
     # Capture the system prompt sent to RubyLLM
     system_prompt_captured = nil
+    mock_response = Object.new
+    mock_response.define_singleton_method(:content) { "Response" }
+    
     mock_chat = Object.new
-    mock_chat.define_singleton_method(:system) { |prompt| system_prompt_captured = prompt }
-    mock_chat.define_singleton_method(:ask) { |_| "Response" }
+    mock_chat.define_singleton_method(:with_instructions) { |prompt| system_prompt_captured = prompt; mock_chat }
+    mock_chat.define_singleton_method(:ask) { |_| mock_response }
 
     RubyLLM.stub :chat, ->(*) { mock_chat } do
       application_agent = ApplicationAgent.create!(
@@ -481,9 +493,12 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     # Capture the model and parameters sent to RubyLLM
     model_captured = nil
     params_captured = nil
+    mock_response = Object.new
+    mock_response.define_singleton_method(:content) { "Response" }
+    
     mock_chat = Object.new
-    mock_chat.define_singleton_method(:system) { |_| }
-    mock_chat.define_singleton_method(:ask) { |_| "Response" }
+    mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
+    mock_chat.define_singleton_method(:ask) { |_| mock_response }
 
     RubyLLM.stub :chat, ->(model: nil, **params) {
       model_captured = model
@@ -513,9 +528,12 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
 
   test "execute method uses default model when none specified" do
     model_captured = nil
+    mock_response = Object.new
+    mock_response.define_singleton_method(:content) { "Response" }
+    
     mock_chat = Object.new
-    mock_chat.define_singleton_method(:system) { |_| }
-    mock_chat.define_singleton_method(:ask) { |_| "Response" }
+    mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
+    mock_chat.define_singleton_method(:ask) { |_| mock_response }
 
     RubyLLM.stub :chat, ->(model: nil, **params) {
       model_captured = model
@@ -605,9 +623,12 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
   end
 
   test "execute method strips whitespace from user message" do
+    mock_response = Object.new
+    mock_response.define_singleton_method(:content) { "Response" }
+    
     mock_chat = Object.new
-    mock_chat.define_singleton_method(:system) { |_| }
-    mock_chat.define_singleton_method(:ask) { |_| "Response" }
+    mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
+    mock_chat.define_singleton_method(:ask) { |_| mock_response }
 
     RubyLLM.stub :chat, mock_chat do
       application_agent = ApplicationAgent.create!(

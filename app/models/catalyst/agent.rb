@@ -128,10 +128,9 @@ module Catalyst
         **formatted_model_params
       )
 
-      chat.system(system_prompt)
-      response = chat.ask(user_message)
+      response = chat.with_instructions(system_prompt).ask(user_message)
 
-      response.to_s
+      response.content
     end
 
     def formatted_model_params
