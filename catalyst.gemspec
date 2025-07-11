@@ -24,4 +24,8 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rails", ">= 8.0.2"
   spec.add_dependency "ruby_llm", "~> 1.3"
+
+  # Development dependencies
+  spec.add_development_dependency "vcr"
+  spec.add_development_dependency "webmock"
 end
