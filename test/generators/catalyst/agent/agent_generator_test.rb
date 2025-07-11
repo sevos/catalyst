@@ -19,13 +19,15 @@ class Catalyst::AgentGeneratorTest < Rails::Generators::TestCase
     run_generator %w[MyAgent]
 
     assert_file "app/ai/prompts/my_agent.md.erb" do |content|
-      assert_match /# MyAgent/, content
-      assert_match /## Role/, content
-      assert_match /<%= role %>/, content
-      assert_match /## Goal/, content
-      assert_match /<%= goal %>/, content
-      assert_match /## Backstory/, content
-      assert_match /<%= backstory %>/, content
+      assert_match /# System Instructions/, content
+      assert_match /## Your Role/, content
+      assert_match /<%= @agent\.role %>/, content
+      assert_match /## Your Primary Goal/, content
+      assert_match /<%= @agent\.goal %>/, content
+      assert_match /## Your Background & Context/, content
+      assert_match /<%= @agent\.backstory %>/, content
+      assert_match /## Instructions/, content
+      assert_match /Always stay in character/, content
     end
   end
 
@@ -33,12 +35,14 @@ class Catalyst::AgentGeneratorTest < Rails::Generators::TestCase
     run_generator %w[MarketingAgent --custom-attributes campaign_type:string]
 
     assert_file "app/ai/prompts/marketing_agent.md.erb" do |content|
-      assert_match /# MarketingAgent/, content
+      assert_match /# System Instructions/, content
       assert_match /\[Define the role for this marketing agent\]/, content
       assert_match /\[Define the goal for this marketing agent\]/, content
       assert_match /\[Define the backstory for this marketing agent\]/, content
       assert_match /## Custom Attributes/, content
-      assert_match /Campaign type.*<%= campaign_type %>/, content
+      assert_match /Campaign type.*<%= @agent\.campaign_type %>/, content
+      assert_match /## Instructions/, content
+      assert_match /Always stay in character/, content
     end
   end
 
@@ -114,7 +118,7 @@ class Catalyst::AgentGeneratorTest < Rails::Generators::TestCase
     end
 
     assert_file "app/ai/prompts/complex_marketing_agent.md.erb" do |content|
-      assert_match /# ComplexMarketingAgent/, content
+      assert_match /# System Instructions/, content
     end
   end
 

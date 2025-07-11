@@ -81,13 +81,15 @@ class Catalyst::InstallGeneratorTest < Rails::Generators::TestCase
     run_generator
 
     assert_file "app/ai/prompts/application_agent.md.erb" do |content|
-      assert_match(/# Assistant/, content)
-      assert_match(/## Role/, content)
-      assert_match(/<%= role %>/, content)
-      assert_match(/## Goal/, content)
-      assert_match(/<%= goal %>/, content)
-      assert_match(/## Backstory/, content)
-      assert_match(/<%= backstory %>/, content)
+      assert_match(/# System Instructions/, content)
+      assert_match(/## Your Role/, content)
+      assert_match(/<%= @agent\.role %>/, content)
+      assert_match(/## Your Primary Goal/, content)
+      assert_match(/<%= @agent\.goal %>/, content)
+      assert_match(/## Your Background & Context/, content)
+      assert_match(/<%= @agent\.backstory %>/, content)
+      assert_match(/## Instructions/, content)
+      assert_match(/Always stay in character/, content)
     end
   end
 
