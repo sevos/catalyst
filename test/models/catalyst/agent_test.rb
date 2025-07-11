@@ -329,7 +329,7 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     # Set up a mock response for testing
     mock_response = Object.new
     mock_response.define_singleton_method(:content) { "Hello! I'm ready to help you with your tasks." }
-    
+
     mock_chat = Minitest::Mock.new
     mock_chat.expect :with_instructions, mock_chat, [ String ]
     mock_chat.expect :ask, mock_response, [ String ]
@@ -363,7 +363,7 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
   test "execute method captures all agent attributes in input_params" do
     mock_response = Object.new
     mock_response.define_singleton_method(:content) { "Response" }
-    
+
     mock_chat = Object.new
     mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
     mock_chat.define_singleton_method(:ask) { |_| mock_response }
@@ -403,7 +403,7 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
   test "execute method tracks execution status transitions" do
     mock_response = Object.new
     mock_response.define_singleton_method(:content) { "Task completed" }
-    
+
     mock_chat = Object.new
     mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
     mock_chat.define_singleton_method(:ask) { |_| mock_response }
@@ -463,7 +463,7 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     system_prompt_captured = nil
     mock_response = Object.new
     mock_response.define_singleton_method(:content) { "Response" }
-    
+
     mock_chat = Object.new
     mock_chat.define_singleton_method(:with_instructions) { |prompt| system_prompt_captured = prompt; mock_chat }
     mock_chat.define_singleton_method(:ask) { |_| mock_response }
@@ -495,7 +495,7 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     params_captured = nil
     mock_response = Object.new
     mock_response.define_singleton_method(:content) { "Response" }
-    
+
     mock_chat = Object.new
     mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
     mock_chat.define_singleton_method(:ask) { |_| mock_response }
@@ -530,7 +530,7 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
     model_captured = nil
     mock_response = Object.new
     mock_response.define_singleton_method(:content) { "Response" }
-    
+
     mock_chat = Object.new
     mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
     mock_chat.define_singleton_method(:ask) { |_| mock_response }
@@ -625,7 +625,7 @@ class Catalyst::AgentTest < ActiveSupport::TestCase
   test "execute method strips whitespace from user message" do
     mock_response = Object.new
     mock_response.define_singleton_method(:content) { "Response" }
-    
+
     mock_chat = Object.new
     mock_chat.define_singleton_method(:with_instructions) { |_| mock_chat }
     mock_chat.define_singleton_method(:ask) { |_| mock_response }
