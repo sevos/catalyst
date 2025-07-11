@@ -18,6 +18,7 @@ The Catalyst Framework addresses a critical gap in the Ruby on Rails ecosystem. 
 |------|---------|-------------|--------|
 | 2025-01-08 | 1.0 | Initial PRD | John (PM) |
 | 2025-07-10 | 1.1 | Updated Epic 1 with actual story inventory and completion status - 5/8 stories done (62.5%) | Sarah (PO) |
+| 2025-07-11 | 1.2 | Story 1.3 completed and merged - Epic 1 now 6/8 stories done (75%) | Sarah (PO) |
 
 ## **2\. Requirements**
 

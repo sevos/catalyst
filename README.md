@@ -5,12 +5,12 @@ A Ruby on Rails engine for orchestrating AI agents with built-in observability, 
 ## 🚧 Development Status
 
 **Current Status:** Early Development - Epic 1 in Progress  
-**Progress:** 5/16 stories complete (31.25%)
+**Progress:** 6/16 stories complete (37.5%)
 
 ### Epic Progress
 | Epic | Progress | Status |
 |------|----------|--------|
-| **Epic 1: "Hello, Agent!" Experience** | 5/8 (62.5%) | 🟡 **In Progress** |
+| **Epic 1: "Hello, Agent!" Experience** | 6/8 (75%) | 🟡 **In Progress** |
 | Epic 2: "Useful Agent" - Tooling & Outputs | 0/3 (0%) | ⏸️ Pending |
 | Epic 3: "Observable Agent" - UI | 0/2 (0%) | ⏸️ Pending |
 | Epic 4: "Secure & Production-Ready Agent" | 0/3 (0%) | ⏸️ Pending |
@@ -21,9 +21,11 @@ A Ruby on Rails engine for orchestrating AI agents with built-in observability, 
 - **Prompt File Generation** - Consistent generator behavior across framework
 - **Agent Generation** - `rails g catalyst:agent` for creating custom agents
 - **RubyLLM Integration** - Multi-provider LLM support (OpenAI, Anthropic, Gemini)
+- **Single Agent Execution API** - Synchronous agent execution with comprehensive tracking
 
 ### 🔄 Next Up
-- **Default LLM Adapter & Basic Execution** - Core agent execution capability
+- **Agentic Iteration Loop & Limits** - Max iterations control for agent reasoning
+- **Asynchronous Execution** - ActiveJob integration for background processing
 
 ## Installation
 
@@ -56,6 +58,29 @@ rails g catalyst:install
    ```
 
 3. **Configure API keys** (see `config/initializers/ruby_llm.rb`)
+
+4. **Execute your agent:**
+   ```ruby
+   # Create an agent
+   agent = ApplicationAgent.create!(
+     role: "Marketing Assistant",
+     goal: "Create compelling marketing content",
+     backstory: "Expert in brand marketing",
+     agent_attributes: {
+       name: "Marketing Agent",
+       model: "gpt-4.1-nano"
+     }
+   )
+   
+   # Execute synchronously
+   response = agent.execute("Create a tagline for a new coffee shop")
+   puts response
+   # => "Brew Your Dreams, One Cup at a Time"
+   
+   # Check execution history
+   agent.executions.last.status  # => "completed"
+   agent.executions.last.duration  # => 2.3 seconds
+   ```
 
 ## Documentation
 

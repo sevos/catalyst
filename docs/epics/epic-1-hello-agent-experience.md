@@ -33,7 +33,7 @@ Build a Rails generator that creates agent classes and prompt templates, enablin
 ### 1.2.1: RubyLLM Integration ✅ **COMPLETED**
 Integrate RubyLLM as the LLM provider layer, adding the dependency, configuration initializer, and ActiveRecord integration to enable unified access to multiple AI providers.
 
-### 1.3: Single Agent Execution API
+### 1.3: Single Agent Execution API ✅ **COMPLETED**
 Implement single agent execution capability that processes agent configuration, input parameters, and user messages to generate system prompts and execute single LLM requests via RubyLLM integration.
 
 ### 1.4: Agentic Iteration Loop & Limits
@@ -52,10 +52,10 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
 - [x] Developer can install the framework with `rails g catalyst:install`
 - [x] Install generator creates prompt files consistently with agent generator
 - [x] Developer can generate a new agent with `rails g catalyst:agent MyAgent`
-- [ ] Agent can be executed synchronously with `MyAgent.perform_now("prompt")`
+- [x] Agent can be executed synchronously with `agent.execute("message")`
 - [ ] Agent can be executed asynchronously with `MyAgent.perform_later("prompt")`
 - [x] Execution results are persisted and accessible
-- [ ] Framework handles errors gracefully
+- [x] Framework handles errors gracefully
 - [ ] Cost control through max_iterations works correctly
 
 ## Definition of Done
@@ -65,18 +65,18 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
   - ✅ Story 1.1.2: Done (prompt file generation gap fixed)
   - ✅ Story 1.2: Done
   - ✅ Story 1.2.1: Done (RubyLLM integration complete)
-  - ⏳ Story 1.3: Draft
+  - ✅ Story 1.3: Done
   - ⏳ Story 1.4: Draft
   - ⏳ Story 1.5: Draft
 - [x] Framework can be installed in a Rails application
 - [x] Agent generation works (`rails g catalyst:agent MyAgent`)
-- [ ] Basic agent execution works end-to-end
+- [x] Basic agent execution works end-to-end
 - [ ] Documentation covers installation and basic usage
 - [x] Tests verify all functionality (for completed stories)
 - [ ] No security vulnerabilities in basic implementation
 
 ## Timeline
-**Target: Sprint 1-2** | **Progress: 5/8 stories complete (62.5%)**
+**Target: Sprint 1-2** | **Progress: 6/8 stories complete (75%)**
 
 - Stories 1.1, 1.1.1, 1.1.2: Foundation & Setup (Sprint 1) 
   - ✅ Story 1.1: **COMPLETED**
@@ -86,8 +86,8 @@ Wrap agent execution in ActiveJob to enable non-blocking asynchronous execution 
   - ✅ Story 1.2: Agent Generation **COMPLETED**
   - ✅ Story 1.2.1: RubyLLM Integration **COMPLETED**
 - Stories 1.3-1.5: Execution & Enhanced Capabilities (Sprint 1-2)
-  - ⏳ Story 1.3: Single Agent Execution API - **NEXT UP**
-  - ⏳ Stories 1.4-1.5: Advanced Features (Sprint 2)
+  - ✅ Story 1.3: Single Agent Execution API - **COMPLETED**
+  - ⏳ Stories 1.4-1.5: Advanced Features (Sprint 2) - **NEXT UP**
 
 ## Risks & Mitigation
 - **Risk:** LLM provider API reliability
